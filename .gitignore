@@ -1,0 +1,8 @@
+lib/**
+include/**
+playm4_include/**
+playm4_lib/**
+
+consoleDemo/include/**
+consoleDemo/linux64/**
+consoleDemo/win32/**
