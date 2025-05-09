@@ -1,0 +1,160 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
+  <xacro:include filename="inertial_macros.xacro" />
+
+  <!-- Base link -->
+  <link name="base_link"/>
+
+  <!-- Chassis link -->
+  <joint name="chassis_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="chassis"/>
+    <origin xyz="0 0 ${chassis_link_h/2+chassis_high}"/>
+  </joint>
+
+  <link name="chassis">
+    <visual>
+      <origin xyz="0 0 0" />
+      <geometry>
+        <box size="${chassis_link_l} ${chassis_link_w} ${chassis_link_h}"/>
+      </geometry>
+      <material name="chassis_material">
+        <color rgba="0.40 0.23 0.72 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" />
+      <geometry>
+        <box size="${chassis_link_l} ${chassis_link_w} ${chassis_link_h}"/>
+      </geometry>
+    </collision>
+    <xacro:inertial_box mass="0.5" x="${chassis_link_l}" y="${chassis_link_w}" z="${chassis_link_h}">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:inertial_box>
+  </link>
+
+  <!-- Left wheel (centered along length) -->
+  <joint name="left_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="left_wheel"/>
+    <origin xyz="0 ${wheel_base/2} ${wheel_diameter/2}" rpy="-${pi/2} 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <link name="left_wheel">
+    <visual>
+      <geometry>
+        <cylinder radius="${wheel_diameter/2}" length="${wheel_width}"/>
+      </geometry>
+      <material name="wheel_material">
+        <color rgba="0.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder radius="${wheel_diameter/2}" length="${wheel_width}"/>
+      </geometry>
+    </collision>
+    <xacro:inertial_cylinder mass="0.1" length="${wheel_width}" radius="${wheel_diameter/2}">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:inertial_cylinder>
+  </link>
+
+  <!-- Right wheel (centered along length) -->
+  <joint name="right_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="right_wheel"/>
+    <origin xyz="0 -${wheel_base/2} ${wheel_diameter/2}" rpy="${pi/2} 0 0"/>
+    <axis xyz="0 0 -1"/>
+  </joint>
+  <link name="right_wheel">
+    <visual>
+      <geometry>
+        <cylinder radius="${wheel_diameter/2}" length="${wheel_width}"/>
+      </geometry>
+      <material name="wheel_material">
+        <color rgba="0.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder radius="${wheel_diameter/2}" length="${wheel_width}"/>
+      </geometry>
+    </collision>
+    <xacro:inertial_cylinder mass="0.1" length="${wheel_width}" radius="${wheel_diameter/2}">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:inertial_cylinder>
+  </link>
+
+  <!-- Front castor wheel (same height as main wheels) -->
+  <joint name="front_castor_wheel_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="front_castor_wheel"/>
+    <origin xyz="${chassis_link_l/2 - chassis_high} 0 ${chassis_high}" />
+  </joint>
+  <link name="front_castor_wheel">
+    <visual>
+      <geometry>
+        <sphere radius="${chassis_high}"/>
+      </geometry>
+      <material name="castor_material">
+        <color rgba="0.62 0.62 0.62 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <sphere radius="${chassis_high}"/>
+      </geometry>
+    </collision>
+    <xacro:inertial_sphere mass="0.1" radius="${chassis_high}">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:inertial_sphere>
+  </link>
+
+  <!-- Rear castor wheel (same height as main wheels) -->
+  <joint name="rear_castor_wheel_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="rear_castor_wheel"/>
+    <origin xyz="-${chassis_link_l/2 - chassis_high} 0 ${chassis_high}" />
+  </joint>
+  <link name="rear_castor_wheel">
+    <visual>
+      <geometry>
+        <sphere radius="${chassis_high}"/>
+      </geometry>
+      <material name="castor_material">
+        <color rgba="0.62 0.62 0.62 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <sphere radius="${chassis_high}"/>
+      </geometry>
+    </collision>
+    <xacro:inertial_sphere mass="0.1" radius="${chassis_high}">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:inertial_sphere>
+  </link>
+
+  <!-- Gazebo Parameters -->
+  <gazebo reference="chassis_link">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+  </gazebo>
+  <gazebo reference="right_wheel">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+  </gazebo>
+  <gazebo reference="left_wheel">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+  </gazebo>
+  <gazebo reference="front_castor_wheel">
+    <mu1>0.000001</mu1>
+    <mu2>0.000001</mu2>
+  </gazebo>
+  <gazebo reference="rear_castor_wheel">
+    <mu1>0.000001</mu1>
+    <mu2>0.000001</mu2>
+  </gazebo>
+</robot>
