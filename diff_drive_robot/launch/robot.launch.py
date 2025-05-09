@@ -6,6 +6,11 @@ from ament_index_python.packages import get_package_share_directory
 from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument, GroupAction
+from launch.substitutions import Command, FindExecutable, PathJoinSubstitution
+from launch_ros.substitutions import FindPackageShare
+from launch.actions import RegisterEventHandler
+from launch.event_handlers import OnProcessExit
+
 
 def generate_launch_description():
 
@@ -56,6 +61,7 @@ def generate_launch_description():
                         executable='create',
                         arguments=['-topic', 'robot_description',
                                    '-name', 'diff_bot',
+                                   '-allow_renaming', 'true',
                                    '-z', '0.2'],
                         output='screen'
     )
@@ -82,26 +88,47 @@ def generate_launch_description():
                     output='screen',)]
     )
     
-    # robot_state_publisher = Node(
-    #     package='robot_state_publisher',
-    #     executable='robot_state_publisher',
-    #     name='robot_state_publisher',
-    #     output='screen',
-    #     parameters=[{'use_sim_time': True}],
-    #     arguments=[urdf_path]
+    # load_controllers_cmd = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource([
+    #         os.path.join(get_package_share_directory(package_name), 'launch', 'load_ros2_controllers.launch.py')
+    #     ]),
+    #     launch_arguments={
+    #         'use_sim_time': 'true',
+    #     }.items(),
     # )
-    # joint_state_publisher = Node(
-    #     package='joint_state_publisher',
-    #     executable='joint_state_publisher',
-    #     name='joint_state_publisher',
-    #     output='screen'
-    # )
+    joint_state_broadcaster_spawner = Node(
+        package='controller_manager',
+        executable='spawner',
+        arguments=["joint_state_broadcaster"],
+        output="screen",
+    )
+    robot_controllers = PathJoinSubstitution(
+        [
+            FindPackageShare(package_name),
+            'config',
+            'ros2_control.yaml',
+        ]
+    )
+    print(f'robot_controllers: {robot_controllers}')
+    diff_drive_base_controller_spawner = Node(
+        package='controller_manager',
+        executable='spawner',
+        output="screen",
+        arguments=[
+            'diff_drive_base_controller',
+            '--param-file',
+            robot_controllers,
+            '--controller-ros-args',
+            '-r /diff_drive_controller/cmd_vel:=/cmd_vel',
+        ],
+    )
     # Launch them all!
     return LaunchDescription([
         # Declare launch arguments
         declare_rviz,
         declare_world,
 
+        
         # Launch the nodes
         # robot_state_publisher,
         # joint_state_publisher,
@@ -110,5 +137,18 @@ def generate_launch_description():
         gazebo_server,
         gazebo_client,
         ros_gz_bridge,
-        spawn_diff_bot
+        spawn_diff_bot,
+        # load_controllers_cmd,
+        RegisterEventHandler(
+            event_handler=OnProcessExit(
+                target_action=spawn_diff_bot,
+                on_exit=[joint_state_broadcaster_spawner],
+            )
+        ),
+        RegisterEventHandler(
+            event_handler=OnProcessExit(
+                target_action=joint_state_broadcaster_spawner,
+                on_exit=[diff_drive_base_controller_spawner],
+            )
+        ),
     ])

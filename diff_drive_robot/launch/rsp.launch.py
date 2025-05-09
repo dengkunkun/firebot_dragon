@@ -45,6 +45,6 @@ def generate_launch_description():
         declare_urdf,
         declare_use_sim_time,
         robot_state_publisher,
-        joint_state_publisher,
+        # joint_state_publisher,
 
     ])
