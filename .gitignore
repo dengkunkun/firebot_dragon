@@ -1,6 +1,10 @@
 lib/**
+lib
+include
 include/**
+playm4_include
 playm4_include/**
+playm4_lib
 playm4_lib/**
 
 consoleDemo/include/**

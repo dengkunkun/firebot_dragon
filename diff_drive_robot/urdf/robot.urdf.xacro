@@ -7,19 +7,33 @@
     </xacro:if>
     <xacro:if value="${machine == 'JetRover_Mecanum'}">
     </xacro:if> -->
+
+    <xacro:arg name="prefix" default=""/>
+    <xacro:arg name="use_gazebo" default="false"/>
+
+
     <xacro:property name="chassis_link_l"        value="0.7"/>
     <xacro:property name="chassis_link_w"        value="0.52"/>
     <xacro:property name="chassis_link_h"        value="0.582"/>
     <xacro:property name="wheel_base"        value="0.593"/>  
-    <xacro:property name="chassis_high"        value="0.051"/>
+    <xacro:property name="chassis_high"        value="0.055"/>
     <xacro:property name="wheel_diameter"        value="0.2"/>
     <xacro:property name="wheel_width"        value="0.04"/>
-    <xacro:property name="wheel_interval"        value="0.04"/>
+    <xacro:property name="wheel_interval"        value="0.047"/>
 
     <xacro:include filename="robot_core.xacro" />
 
     <!-- <xacro:include filename="gazebo_control.xacro" /> -->
-    <xacro:include filename="ros_control.xacro" />
+    <!-- <xacro:include filename="ros_control.xacro" /> -->
     <xacro:include filename="lidar.xacro" />
+    <xacro:include filename="$(find diff_drive_robot)/urdf/imu.xacro"/>
 
+    <xacro:imu_sensor
+      prefix="$(arg prefix)"
+      parent="chassis"
+      frame_id="imu"
+      xyz_offset="0 0 0.006"
+      rpy_offset="0 0 0"
+      update_rate="15.0"
+      topic_name="imu/data"/>
 </robot>

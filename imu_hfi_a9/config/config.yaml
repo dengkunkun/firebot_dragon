@@ -1,0 +1,8 @@
+/**:
+  ros__parameters:
+    port: '/dev/ttyUSB0'
+    baudrate: 921600
+    gra_normalization: true
+    cali_static_bias: true
+    cali_angular_noise: true
+    angular_velocity_threshold: 0.005

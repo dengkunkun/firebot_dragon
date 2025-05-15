@@ -4,6 +4,13 @@
 <!-- |    EDITING THIS FILE BY HAND IS NOT RECOMMENDED                                 | -->
 <!-- =================================================================================== -->
 <robot name="diff_drive_robot">
+  <!-- <xacro:property name="lidar"        value="$(env LIDAR_TYPE)"/>
+    <xacro:property name="machine"      value="$(env MACHINE_TYPE)"/>
+
+    <xacro:if value="${lidar in ['A1', 'A2', 'S2L', 'LD14P']}">
+    </xacro:if>
+    <xacro:if value="${machine == 'JetRover_Mecanum'}">
+    </xacro:if> -->
   <!-- Specify some standard inertial calculations https://en.wikipedia.org/wiki/List_of_moments_of_inertia -->
   <!-- These make use of xacro's mathematical functionality -->
   <!-- Base link -->
@@ -12,7 +19,7 @@
   <joint name="chassis_joint" type="fixed">
     <parent link="base_link"/>
     <child link="chassis"/>
-    <origin xyz="0 0 0.34199999999999997"/>
+    <origin xyz="0 0 0.346"/>
   </joint>
   <link name="chassis">
     <visual>
@@ -94,12 +101,12 @@
   <joint name="front_castor_wheel_joint" type="fixed">
     <parent link="base_link"/>
     <child link="front_castor_wheel"/>
-    <origin xyz="0.299 0 0.051"/>
+    <origin xyz="0.295 0 0.055"/>
   </joint>
   <link name="front_castor_wheel">
     <visual>
       <geometry>
-        <sphere radius="0.051"/>
+        <sphere radius="0.055"/>
       </geometry>
       <material name="castor_material">
         <color rgba="0.62 0.62 0.62 1.0"/>
@@ -107,25 +114,25 @@
     </visual>
     <collision>
       <geometry>
-        <sphere radius="0.051"/>
+        <sphere radius="0.055"/>
       </geometry>
     </collision>
     <inertial>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <mass value="0.1"/>
-      <inertia ixx="0.00010404" ixy="0.0" ixz="0.0" iyy="0.00010404" iyz="0.0" izz="0.00010404"/>
+      <inertia ixx="0.00012100000000000001" ixy="0.0" ixz="0.0" iyy="0.00012100000000000001" iyz="0.0" izz="0.00012100000000000001"/>
     </inertial>
   </link>
   <!-- Rear castor wheel (same height as main wheels) -->
   <joint name="rear_castor_wheel_joint" type="fixed">
     <parent link="base_link"/>
     <child link="rear_castor_wheel"/>
-    <origin xyz="-0.299 0 0.051"/>
+    <origin xyz="-0.295 0 0.055"/>
   </joint>
   <link name="rear_castor_wheel">
     <visual>
       <geometry>
-        <sphere radius="0.051"/>
+        <sphere radius="0.055"/>
       </geometry>
       <material name="castor_material">
         <color rgba="0.62 0.62 0.62 1.0"/>
@@ -133,13 +140,13 @@
     </visual>
     <collision>
       <geometry>
-        <sphere radius="0.051"/>
+        <sphere radius="0.055"/>
       </geometry>
     </collision>
     <inertial>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <mass value="0.1"/>
-      <inertia ixx="0.00010404" ixy="0.0" ixz="0.0" iyy="0.00010404" iyz="0.0" izz="0.00010404"/>
+      <inertia ixx="0.00012100000000000001" ixy="0.0" ixz="0.0" iyy="0.00012100000000000001" iyz="0.0" izz="0.00012100000000000001"/>
     </inertial>
   </link>
   <!-- Gazebo Parameters -->
@@ -163,30 +170,10 @@
     <mu1>0.000001</mu1>
     <mu2>0.000001</mu2>
   </gazebo>
-  <gazebo>
-    <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
-      <right_joint>right_wheel_joint</right_joint>
-      <left_joint>left_wheel_joint</left_joint>
-      <wheel_separation>0.593</wheel_separation>
-      <wheel_diameter>0.2</wheel_diameter>
-      <max_linear_acceleration>10</max_linear_acceleration>
-      <topic>cmd_vel</topic>
-      <odom_topic>odom</odom_topic>
-      <frame_id>odom</frame_id>
-      <child_frame_id>base_link</child_frame_id>
-      <odom_publisher_frequency>100</odom_publisher_frequency>
-      <tf_topic>/tf</tf_topic>
-    </plugin>
-    <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
-      <topic>joint_states</topic>
-      <joint_name>right_wheel_joint</joint_name>
-      <joint_name>left_wheel_joint</joint_name>
-    </plugin>
-  </gazebo>
   <joint name="laser_joint" type="fixed">
     <parent link="chassis"/>
     <child link="laser_frame"/>
-    <origin rpy="0 0 0" xyz="0.1 0 0.291"/>
+    <origin rpy="0 0 0" xyz="0.28 0 0.353"/>
   </joint>
   <link name="laser_frame">
     <visual>
@@ -232,6 +219,41 @@
           <max>12</max>
         </range>
       </lidar>
+    </sensor>
+  </gazebo>
+  <link name="imu_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.03899 0.03785 0.01338"/>
+      </geometry>
+      <material name="imu_black">
+        <color rgba="0.1 0.1 0.1 1"/>
+      </material>
+    </visual>
+    <inertial>
+      <mass value="0.031"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="4.163421158333333e-06" ixy="0.0" ixz="0.0" iyy="4.389714958333333e-06" iyz="0.0" izz="7.6281767166666665e-06"/>
+    </inertial>
+  </link>
+  <joint name="imu_joint" type="fixed">
+    <parent link="chassis"/>
+    <child link="imu_link"/>
+    <origin rpy="0 0 0" xyz="0 0 0.006"/>
+  </joint>
+  <gazebo reference="imu_link">
+    <material>
+      <ambient>0.1 0.1 0.1 1</ambient>
+      <diffuse>0.1 0.1 0.1 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+    </material>
+    <sensor name="imu_sensor" type="imu">
+      <topic>imu/data</topic>
+      <update_rate>15.0</update_rate>
+      <always_on>True</always_on>
+      <visualize>False</visualize>
+      <gz_frame_id>imu_link</gz_frame_id>
     </sensor>
   </gazebo>
 </robot>

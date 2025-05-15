@@ -1,0 +1,87 @@
+LIBRARY_PATH=
+/usr/lib/gcc/x86_64-linux-gnu/12/
+/usr/lib/gcc/x86_64-linux-gnu/12/../../../x86_64-linux-gnu/
+/usr/lib/gcc/x86_64-linux-gnu/12/../../../../lib/
+/lib/x86_64-linux-gnu/
+/lib/../lib/
+/usr/lib/x86_64-linux-gnu/
+/usr/lib/../lib/
+/usr/lib/gcc/x86_64-linux-gnu/12/../../../
+/lib/
+/usr/lib/
+
+
+/usr/lib/gcc/x86_64-linux-gnu/12/collect2
+-plugin
+/usr/lib/gcc/x86_64-linux-gnu/12/liblto_plugin.so
+-plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/12/lto-wrapper
+-plugin-opt=-fresolution=/tmp/cczfCLvS.res
+-plugin-opt=-pass-through=-lgcc_s
+-plugin-opt=-pass-through=-lgcc
+-plugin-opt=-pass-through=-lc
+-plugin-opt=-pass-through=-lgcc_s
+-plugin-opt=-pass-through=-lgcc
+--build-id
+--eh-frame-hdr
+-m elf_x86_64
+--hash-style=gnu
+--as-needed
+-dynamic-linker /lib64/ld-linux-x86-64.so.2
+-pie
+-o usb_link
+/usr/lib/gcc/x86_64-linux-gnu/12/../../../x86_64-linux-gnu/Scrt1.o
+/usr/lib/gcc/x86_64-linux-gnu/12/../../../x86_64-linux-gnu/crti.o
+/usr/lib/gcc/x86_64-linux-gnu/12/crtbeginS.o
+-L/usr/lib/gcc/x86_64-linux-gnu/11/
+-L/usr/lib/gcc/x86_64-linux-gnu/12
+-L/usr/lib/gcc/x86_64-linux-gnu/12/../../../x86_64-linux-gnu
+-L/usr/lib/gcc/x86_64-linux-gnu/12/../../../../lib
+-L/lib/x86_64-linux-gnu
+-L/lib/../lib
+-L/usr/lib/x86_64-linux-gnu
+-L/usr/lib/../lib
+-L/usr/lib/gcc/x86_64-linux-gnu/12/../../..
+a.o
+-lstdc++
+-lusb-1.0
+-lstdc++
+-lm
+-lgcc_s
+-lgcc
+-lc
+-lgcc_s
+-lgcc
+/usr/lib/gcc/x86_64-linux-gnu/12/crtendS.o
+/usr/lib/gcc/x86_64-linux-gnu/12/../../../x86_64-linux-gnu/crtn.o
+
+
+ /usr/lib/gcc/x86_64-linux-gnu/12/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/12/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/12/lto-wrapper -plugin-opt=-fresolution=/tmp/ccD3QwmP.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie /usr/lib/gcc/x86_64-linux-gnu/12/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/12/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/12/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/12 -L/usr/lib/gcc/x86_64-linux-gnu/12/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/12/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/12/../../.. a.o -lusb-1.0 -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/12/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/12/../../../x86_64-linux-gnu/crtn.o
+
+
+ mr3x00@MARK5  /mnt/d/desktop/test/usb  ldd a.out
+        linux-vdso.so.1 (0x00007fff43593000)
+        libstdc++.so.6 => /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007f2593e5d000)
+        libusb-1.0.so.0 => /lib/x86_64-linux-gnu/libusb-1.0.so.0 (0x00007f2593e3e000)
+        libgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007f2593e1e000)
+        libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f2593c3d000)
+        libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007f2593b5d000)
+        /lib/ld64.so.1 => /lib64/ld-linux-x86-64.so.2 (0x00007f2594083000)
+        libudev.so.1 => /lib/x86_64-linux-gnu/libudev.so.1 (0x00007f2593b2d000)
+        libpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007f2593b28000)
+ mr3x00@MARK5  /mnt/d/desktop/test/usb  ldd b.out
+        linux-vdso.so.1 (0x00007ffd255ed000)
+        libstdc++.so.6 => /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007fe3e4869000)
+        libusb-1.0.so.0 => /lib/x86_64-linux-gnu/libusb-1.0.so.0 (0x00007fe3e4a83000)
+        libgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007fe3e4553000)
+        libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007fe3e4688000)
+        libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007fe3e4573000)
+        /lib64/ld-linux-x86-64.so.2 (0x00007fe3e4ab3000)
+        libudev.so.1 => /lib/x86_64-linux-gnu/libudev.so.1 (0x00007fe3e465a000)
+        libpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007fe3e4655000)
+
+
+
+
+
+
+
