@@ -1,0 +1,8 @@
+[2025-05-07 17:18:30.150][INF] The COM:HCCoreBase ver is 6.1.4.15, 2020_03_05. Async:1.
+[2025-05-07 17:18:30.150][INF] The COM:Core ver is 6.1.9.48, 2023_04_10. Async:1.
+[2025-05-07 17:18:30.150][INF] This HCNetSDK ver is 6.1.9.48 Ver 2023_04_10.
+[2025-05-07 17:18:30.150][INF] Login dev 192.168.10.8:8000.
+[2025-05-07 17:18:30.150][INF] dwTotalNum[2048]
+[2025-05-07 17:18:33.655][ERR] Private connect 192.168.10.8:8000 sock=136 this=0xd4659a34 cmd=0x10000 sys_err=110, timeout= 3500 port=0
+[2025-05-07 17:18:33.655][ERR] [192.168.10.8:8000]LogonDevice Link_CreateLink fail[7].
+[2025-05-07 17:18:33.655][ERR] CMemberMgrBase::AllocIndex2, MemberStart Failed, iIndex[0]

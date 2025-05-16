@@ -1,0 +1,24 @@
+slam_toolbox:
+  ros__parameters:
+    # General Parameters
+    odom_frame: odom
+    map_frame: map
+    base_frame: base_link
+    scan_topic: scan
+    mode: mapping #localization
+
+    # SLAM Parameters
+    use_sim_time: false
+    max_laser_range: 20.0
+    minimum_time_interval: 0.5
+    transform_timeout: 0.2
+    resolution: 0.05
+    map_update_interval: 5.0
+    transform_publish_period: 0.05
+    enable_interactive_mode: false
+
+    # Optimization Parameters
+    optimization_linear_update: 0.2
+    optimization_angular_update: 0.2
+    optimization_outer_iterations: 3
+    optimization_inner_iterations: 10

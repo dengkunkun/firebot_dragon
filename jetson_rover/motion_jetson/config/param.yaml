@@ -1,0 +1,15 @@
+/**:
+  ros__parameters:
+    pub_odom_topic: true
+    base_frame_id: base_footprint
+    odom_frame_id: odom_raw
+    linear_correction_factor: 1.00
+    angular_correction_factor: 1.00
+    odom_pub_rate: 50
+    linear_max_x: 1.0
+    linear_max_y: 0.0
+    angular_max_z: 0.3
+    wheelbase: 0.0
+    track_width: 0.614
+    wheel_diameter: 0.2
+    # machine_type: ${env:MACHINE_TYPE}

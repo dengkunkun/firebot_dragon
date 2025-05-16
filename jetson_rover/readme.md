@@ -15,3 +15,12 @@ rtabmap_jetson
 nav2_jetson
 
 bringup_jetson 所有硬件启动
+
+
+usb_link:
+    /imu_raw frame_id: imu_link
+
+motion_jetson:
+    /odom_raw:
+        base_frame_id: base_footprint
+        odom_frame_id: odom_raw
