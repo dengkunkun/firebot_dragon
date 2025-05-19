@@ -8,8 +8,9 @@
     odom_pub_rate: 50
     linear_max_x: 1.0
     linear_max_y: 0.0
-    angular_max_z: 0.3
+    angular_max_z: 0.8
     wheelbase: 0.0
     track_width: 0.614
     wheel_diameter: 0.2
+    open_loop: false
     # machine_type: ${env:MACHINE_TYPE}

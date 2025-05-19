@@ -94,6 +94,14 @@ class MecanumChassis:
         """
         # distance / circumference = rotations per second
         return speed / (math.pi * self.wheel_diameter)
+    def rps_convert(self, rps):
+        """
+        covert rps/s to m/s
+        :param rps:
+        :return:
+        """
+        # rotations per second * circumference = distance
+        return rps * (math.pi * self.wheel_diameter)
     def set_velocity(self, linear_x, linear_y, angular_z):
         """
         Use polar coordinates to control moving
@@ -130,7 +138,16 @@ class MecanumChassis:
         msg = MotorsState()
         msg.data = data
         return msg
-
+    def get_velocity(self,left_rps, right_rps):
+        """
+        :param left_rps:
+        :param right_rps:
+        :return:
+        """
+        # 计算线速度和角速度
+        linear_x = (left_rps + right_rps) / 2.0
+        angular_z = (right_rps - left_rps) / self.track_width
+        return linear_x, angular_z
 '''
 cmd_vel转轮上速度 差速驱动模型
 参数有：轮距b，转弯半径l
@@ -189,6 +206,8 @@ class Controller(Node):
         self.declare_parameter('track_width',0.0)
         self.declare_parameter('wheel_diameter', 0.0)
         
+        self.declare_parameter('open_loop', False)
+        
         self.pub_odom_topic = self.get_parameter('pub_odom_topic').value
         self.base_frame_id = self.get_parameter('base_frame_id').value
         self.odom_frame_id = self.get_parameter('odom_frame_id').value
@@ -200,6 +219,8 @@ class Controller(Node):
         self.linear_max_x = self.get_parameter('linear_max_x').value
         self.linear_max_y = self.get_parameter('linear_max_y').value
         self.angular_max_z = self.get_parameter('angular_max_z').value
+        
+        self.open_loop = self.get_parameter('open_loop').value
 
         self.wheelbase = self.get_parameter('wheelbase').value
         self.track_width = self.get_parameter('track_width').value
@@ -222,8 +243,10 @@ class Controller(Node):
             
             self.odom_pub = self.create_publisher(Odometry, 'odom_raw', 1)
             self.dt = 1.0/self.odom_pub_rate
-
-            threading.Thread(target=self.cal_odom_fun, daemon=True).start()
+            if self.open_loop:
+                threading.Thread(target=self.odom_from_cmd_vel, daemon=True).start()
+            else:
+                self.motor_pub = self.create_subscription(MotorsState, 'motors_rsp', self.odom_from_motor,1)
         self.motor_pub = self.create_publisher(MotorsState, 'motors_set', 1)
         self.create_subscription(Pose2D, 'set_odom', self.set_odom, 1)
         self.create_subscription(Twist, 'controller/cmd_vel', self.controller_cmd_vel_callback, 1)
@@ -296,7 +319,7 @@ class Controller(Node):
         self.motor_pub.publish(speeds)
 
 
-    def cal_odom_fun(self):
+    def odom_from_cmd_vel(self):
         while True:
             self.current_time = time.time()
             if self.last_time is None:
@@ -338,7 +361,49 @@ class Controller(Node):
             self.odom_pub.publish(self.odom)
             self.last_time = self.current_time
             time.sleep(1/self.odom_pub_rate)
+    def odom_from_motor(self, msg):
+        self.get_logger().debug(f'\033[1;32m{msg.data[0].rps} {msg.data[1].rps} \033[0m')
+        self.linear_x, self.angular_z = self.mecanum.get_velocity(msg.data[0].rps, msg.data[1].rps)
+        self.current_time = time.time()
+        if self.last_time is None:
+            self.dt = 0.0
+        else:
+            # 计算时间间隔
+            self.dt = self.current_time - self.last_time
+        self.odom.header.stamp = self.clock.now().to_msg()
+        
+        self.x += math.cos(self.pose_yaw)*self.linear_x*self.dt - math.sin(self.pose_yaw)*self.linear_y*self.dt
+        self.y += math.sin(self.pose_yaw)*self.linear_x*self.dt + math.cos(self.pose_yaw)*self.linear_y*self.dt
+        self.pose_yaw += self.angular_factor*self.angular_z*self.dt
 
+        self.odom.pose.pose.position.x = self.linear_factor*self.x
+        self.odom.pose.pose.position.y = self.linear_factor*self.y
+        self.odom.pose.pose.position.z = 0.0
+
+        self.odom.pose.pose.orientation = rpy2qua(0.0, 0.0, self.pose_yaw)
+        self.odom.twist.twist.linear.x = self.linear_x
+        self.odom.twist.twist.linear.y = self.linear_y
+        self.odom.twist.twist.angular.z = self.angular_z
+
+        # self.odom_trans.header.stamp = self.clock.now().to_msg()
+        # self.odom_trans.transform.translation.x = self.odom.pose.pose.position.x
+        # self.odom_trans.transform.translation.y = self.odom.pose.pose.position.y
+        # self.odom_trans.transform.translation.z = 0.0
+        # self.odom_trans.transform.rotation = self.odom.pose.pose.orientation
+
+        # 如果velocity是零，说明编码器的误差会比较小，认为编码器数据更可靠
+        # 如果velocity非零，考虑到运动中编码器可能带来的滑动误差，认为imu的数据更可靠
+        if self.linear_x == 0 and self.linear_y == 0 and self.angular_z == 0:
+            self.odom.pose.covariance = ODOM_POSE_COVARIANCE_STOP
+            self.odom.twist.covariance = ODOM_TWIST_COVARIANCE_STOP
+        else:
+            self.odom.pose.covariance = ODOM_POSE_COVARIANCE
+            self.odom.twist.covariance = ODOM_TWIST_COVARIANCE
+        self.get_logger().debug(f'\033[1;32m{self.odom.pose.pose.position.x} {self.odom.pose.pose.position.y} {self.odom.twist.twist.linear.x} {self.odom.twist.twist.linear.y}\033[0m')
+        # self.odom_broadcaster.sendTransform(self.odom_trans)
+        self.odom_pub.publish(self.odom)
+        self.last_time = self.current_time
+        
 def main():
     node = Controller('motion_jetson')
     try:

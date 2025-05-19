@@ -4,54 +4,28 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
 import os
-
+#这个默认无法启动，需要手动配置和激活生命周期，可能是新版改为默认使用生命周期了
 def generate_launch_description():
-    # 声明参数
-    use_sim_time = LaunchConfiguration('use_sim_time')
-    base_frame = LaunchConfiguration('base_frame')
+    # Get parameters file path
+    pkg_dir = get_package_share_directory('slam_toolbox_jetson')
+    params_file = os.path.join(pkg_dir, 'config', 'slam_params.yaml')
     
-    # 获取默认参数文件路径
-    slam_params_file = os.path.join(
-        get_package_share_directory('slam_toolbox_jetson'),
-        'config',
-        'slam_params.yaml'
-    )
-
-    # 配置 SLAM Toolbox 节点
+    # Configure SLAM Toolbox node
     slam_toolbox_node = Node(
-        parameters=[
-            slam_params_file,
-            {'use_sim_time': use_sim_time,
-             'base_frame': base_frame,
-             'odom_frame': 'odom',
-             'map_frame': 'map',
-             'transform_publish_period': 0.05,
-             'map_update_interval': 5.0}
-        ],
         package='slam_toolbox',
-        executable='async_slam_toolbox_node',
+        executable='sync_slam_toolbox_node',  # Changed to sync version
         name='slam_toolbox',
         output='screen',
+        parameters=[{'params_file': params_file}],  # Pass params file directly
         remappings=[
-            ('/scan', 'scan'),  # Ensure this matches your laser scan topic
-            ('/tf', 'tf'),
-            ('/tf_static', 'tf_static'),
-            ('/map', 'map'),
-            ('/map_metadata', 'map_metadata')
+            ('scan', 'scan'),
+            ('tf', 'tf'),
+            ('tf_static', 'tf_static'),
+            ('map', 'map'),
+            ('map_metadata', 'map_metadata')
         ]
     )
 
     return LaunchDescription([
-        # 声明 launch 参数
-        DeclareLaunchArgument(
-            'use_sim_time',
-            default_value='false',
-            description='Use simulation time'
-        ),
-        DeclareLaunchArgument(
-            'base_frame',
-            default_value='base_link',
-            description='Base frame id'
-        ),
         slam_toolbox_node
     ])

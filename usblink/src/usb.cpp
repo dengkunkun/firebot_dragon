@@ -17,6 +17,11 @@
 #include "sensor_msgs/msg/imu.hpp"
 
 // #define __DEBUG__
+#include <cmath>
+#define DEG_TO_RAD(x) ((x) * M_PI / 180.0)
+#define RAD_TO_DEG(x) ((x) * 180.0 / M_PI)
+
+
 
 #define USBLINK_VID 0x7676
 #define USBLINK_PID 0x2302
@@ -278,10 +283,13 @@ void __package_upload_data(uint8_t *dat)
 
 	tmp = dp_u8_2_u32_lsb(&dat[0]);
 	gx = (double)*((float *)(&tmp));
+	gx = DEG_TO_RAD(gx);
 	tmp = dp_u8_2_u32_lsb(&dat[4]);
 	gy = (double)*((float *)(&tmp));
+	gy = DEG_TO_RAD(gy);
 	tmp = dp_u8_2_u32_lsb(&dat[8]);
 	gz = (double)*((float *)(&tmp));
+	gz = DEG_TO_RAD(-gz);
 	tmp = dp_u8_2_u32_lsb(&dat[12]);
 	ax = (double)*((float *)(&tmp));
 	tmp = dp_u8_2_u32_lsb(&dat[16]);
