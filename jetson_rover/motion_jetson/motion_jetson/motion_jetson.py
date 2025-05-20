@@ -144,9 +144,11 @@ class MecanumChassis:
         :param right_rps:
         :return:
         """
+        left_v=self.rps_convert(left_rps)
+        right_v=self.rps_convert(right_rps)
         # 计算线速度和角速度
-        linear_x = (left_rps + right_rps) / 2.0
-        angular_z = (right_rps - left_rps) / self.track_width
+        linear_x = (left_v + right_v) / 2.0
+        angular_z = (right_v - left_v) / self.track_width
         return linear_x, angular_z
 '''
 cmd_vel转轮上速度 差速驱动模型
@@ -221,6 +223,7 @@ class Controller(Node):
         self.angular_max_z = self.get_parameter('angular_max_z').value
         
         self.open_loop = self.get_parameter('open_loop').value
+        self.get_logger().info(f'\033[1;32m{self.open_loop}\033[0m')
 
         self.wheelbase = self.get_parameter('wheelbase').value
         self.track_width = self.get_parameter('track_width').value
@@ -245,8 +248,10 @@ class Controller(Node):
             self.dt = 1.0/self.odom_pub_rate
             if self.open_loop:
                 threading.Thread(target=self.odom_from_cmd_vel, daemon=True).start()
+                self.get_logger().info('\033[1;32m%s\033[0m' % 'open loop')
             else:
                 self.motor_pub = self.create_subscription(MotorsState, 'motors_rsp', self.odom_from_motor,1)
+                self.get_logger().info('\033[1;32m%s\033[0m' % 'close loop')
         self.motor_pub = self.create_publisher(MotorsState, 'motors_set', 1)
         self.create_subscription(Pose2D, 'set_odom', self.set_odom, 1)
         self.create_subscription(Twist, 'controller/cmd_vel', self.controller_cmd_vel_callback, 1)
@@ -305,7 +310,7 @@ class Controller(Node):
         # msg.linear.x *= self.linear_factor
         # msg.linear.y *= self.linear_factor
         # msg.angular.z *= self.angular_factor
-        self.get_logger().debug(f'\033[1;32m{msg.linear.x} {msg.linear.y} {msg.angular.z}\033[0m')
+        self.get_logger().info(f'\033[1;32m m/s {msg.linear.x} {msg.linear.y} {msg.angular.z}\033[0m')
         self.linear_x = msg.linear.x
         self.linear_y = msg.linear.y
         if abs(msg.linear.y) > 1e-8:  #如果转弯太急，则不允许前进，只做转弯
@@ -316,6 +321,7 @@ class Controller(Node):
 
         self.angular_z = msg.angular.z
         speeds = self.mecanum.set_velocity(self.linear_x, 0.0, self.angular_z)
+        self.get_logger().info(f'\033[1;32m rps {speeds}\033[0m')
         self.motor_pub.publish(speeds)
 
 
@@ -362,15 +368,18 @@ class Controller(Node):
             self.last_time = self.current_time
             time.sleep(1/self.odom_pub_rate)
     def odom_from_motor(self, msg):
-        self.get_logger().debug(f'\033[1;32m{msg.data[0].rps} {msg.data[1].rps} \033[0m')
-        self.linear_x, self.angular_z = self.mecanum.get_velocity(msg.data[0].rps, msg.data[1].rps)
         self.current_time = time.time()
         if self.last_time is None:
-            self.dt = 0.0
+            self.last_time=time.time()
+            return
         else:
             # 计算时间间隔
             self.dt = self.current_time - self.last_time
         self.odom.header.stamp = self.clock.now().to_msg()
+        self.linear_x, self.angular_z = self.mecanum.get_velocity(msg.data[0].rps, msg.data[1].rps)
+        if self.linear_x != 0:
+            self.get_logger().info(f'\033[1;32m rps {msg.data[0].rps} {msg.data[1].rps} \033[0m')
+            self.get_logger().info(f'\033[1;32m m/s {self.linear_x} {self.angular_z} dt:{self.dt} \033[0m')
         
         self.x += math.cos(self.pose_yaw)*self.linear_x*self.dt - math.sin(self.pose_yaw)*self.linear_y*self.dt
         self.y += math.sin(self.pose_yaw)*self.linear_x*self.dt + math.cos(self.pose_yaw)*self.linear_y*self.dt
@@ -384,6 +393,8 @@ class Controller(Node):
         self.odom.twist.twist.linear.x = self.linear_x
         self.odom.twist.twist.linear.y = self.linear_y
         self.odom.twist.twist.angular.z = self.angular_z
+        if self.linear_x != 0:
+            self.get_logger().info(f'\033[1;32m{self.odom.pose.pose.position.x} {self.odom.pose.pose.position.y} {self.odom.twist.twist.linear.x} {self.odom.twist.twist.linear.y}\033[0m')
 
         # self.odom_trans.header.stamp = self.clock.now().to_msg()
         # self.odom_trans.transform.translation.x = self.odom.pose.pose.position.x
@@ -399,7 +410,6 @@ class Controller(Node):
         else:
             self.odom.pose.covariance = ODOM_POSE_COVARIANCE
             self.odom.twist.covariance = ODOM_TWIST_COVARIANCE
-        self.get_logger().debug(f'\033[1;32m{self.odom.pose.pose.position.x} {self.odom.pose.pose.position.y} {self.odom.twist.twist.linear.x} {self.odom.twist.twist.linear.y}\033[0m')
         # self.odom_broadcaster.sendTransform(self.odom_trans)
         self.odom_pub.publish(self.odom)
         self.last_time = self.current_time

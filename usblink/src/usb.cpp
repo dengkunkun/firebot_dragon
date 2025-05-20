@@ -114,11 +114,11 @@ class usblink_publisher : public rclcpp::Node
 			auto motor_state = ros_robot_controller_msgs::msg::MotorState();
 
 			motor_state.id = 2;
-			motor_state.rps = ((double)l_speed) / 60.0l;
+			motor_state.rps = ((double)l_speed) / 600.0l;
 			dat.data.push_back(motor_state);
 
 			motor_state.id = 4;
-			motor_state.rps = ((double)r_speed) / 60.0l;
+			motor_state.rps = ((double)r_speed) / 600.0l;
 			dat.data.push_back(motor_state);
 
 			motors_rsp_publisher->publish(dat);
@@ -169,6 +169,11 @@ class usblink_publisher : public rclcpp::Node
 				return;
 			}
 			RCLCPP_INFO(this->get_logger(), "sub recv: l:%d r:%d", dp_u8_2_u16_msb(&dat[0]), dp_u8_2_u16_msb(&dat[2]));
+				
+			if(l_speed!=0 || r_speed!=0){
+				RCLCPP_INFO(this->get_logger(), "sub send: l:%d r:%d", l_speed, r_speed);
+			}
+			
 			for (auto i = tmp.begin(); i != tmp.end(); i++) {
 				printf("%02x ", *i.base());
 			}
@@ -322,6 +327,8 @@ void execute_rx_packet(std::shared_ptr<usblink_publisher> up)
 			printf("\ngx: %f gy: %f gz: %f\n", gx, gy, gz);
 			printf("\nax: %f ay: %f az: %f\n", ax, ay, az);
 			std::cout << "l_speed: " << l_speed << " r_speed: " << r_speed << std::endl;
+
+			RCLCPP_INFO(up->get_logger(), "l_speed: %d r_speed: %d", l_speed, r_speed);
 			std::time_t t;
 			int64_t t_ms;
 			t_ms = get_time_stamp() % 1000;

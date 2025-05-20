@@ -27,6 +27,7 @@
     <!-- <xacro:include filename="ros_control.xacro" /> -->
     <xacro:include filename="lidar.xacro" />
     <xacro:include filename="$(find diff_drive_robot)/urdf/imu.xacro"/>
+    <xacro:include filename="$(find diff_drive_robot)/urdf/dabai_dcw.urdf.xacro"/>
 
     <xacro:imu_sensor
       prefix="$(arg prefix)"
@@ -36,4 +37,10 @@
       rpy_offset="0 0 0"
       update_rate="15.0"
       topic_name="imu/data"/>
+
+    <xacro:dabai_dcw
+      prefix="$(arg prefix)"
+      camera_name="dabai_dcw"
+      xyz_offset="0.28 0 0.51"
+      rpy_offset="0 0 0"/>
 </robot>

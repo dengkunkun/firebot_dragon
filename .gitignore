@@ -10,3 +10,5 @@ playm4_lib/**
 consoleDemo/include/**
 consoleDemo/linux64/**
 consoleDemo/win32/**
+
+*.pyc

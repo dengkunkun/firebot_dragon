@@ -13,6 +13,12 @@
     </xacro:if> -->
   <!-- Specify some standard inertial calculations https://en.wikipedia.org/wiki/List_of_moments_of_inertia -->
   <!-- These make use of xacro's mathematical functionality -->
+  <link name="base_footprint"/>
+  <joint name="base_link_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0"/>
+  </joint>
   <!-- Base link -->
   <link name="base_link"/>
   <!-- Chassis link -->
@@ -233,14 +239,14 @@
     </visual>
     <inertial>
       <mass value="0.031"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="0.34 0 0"/>
       <inertia ixx="4.163421158333333e-06" ixy="0.0" ixz="0.0" iyy="4.389714958333333e-06" iyz="0.0" izz="7.6281767166666665e-06"/>
     </inertial>
   </link>
   <joint name="imu_joint" type="fixed">
     <parent link="chassis"/>
     <child link="imu_link"/>
-    <origin rpy="0 0 0" xyz="0 0 0.006"/>
+    <origin rpy="0 0 0" xyz="0.34 0 -0.15599999999999997"/>
   </joint>
   <gazebo reference="imu_link">
     <material>
@@ -254,6 +260,102 @@
       <always_on>True</always_on>
       <visualize>False</visualize>
       <gz_frame_id>imu_link</gz_frame_id>
+    </sensor>
+  </gazebo>
+  <link name="camera_depth_optical_frame">
+    <visual>
+      <origin rpy="1.5707963267948966 0.0 1.5707963267948966" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.02 0.08 0.02"/>
+      </geometry>
+      <material name="aluminum">
+        <color rgba="0.5 0.5 0.5 1"/>
+      </material>
+    </visual>
+    <inertial>
+      <mass value="0.072"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="0.003881243" ixy="0.0" ixz="0.0" iyy="0.00049894" iyz="0.0" izz="0.003879257"/>
+    </inertial>
+  </link>
+  <joint name="cam_1_joint" type="fixed">
+    <parent link="chassis"/>
+    <child link="camera_depth_optical_frame"/>
+    <origin rpy="0 -0.50 0" xyz="0.105 0 0.05"/>
+  </joint>
+  <!-- <joint name="${prefix}${camera_name}_depth_joint" type="fixed">
+      <origin xyz="${depth_frame_xyz_offset}" rpy="${depth_frame_rpy_offset}"/>
+      <parent link="${prefix}${camera_name}_link"/>
+      <child link="${prefix}${camera_name}_depth_frame" />
+    </joint>
+    <link name="${prefix}${camera_name}_depth_frame"/>
+
+    <joint name="${prefix}${camera_name}_depth_optical_joint" type="fixed">
+      <origin xyz="${optical_xyz_offset}" rpy="${optical_rpy_offset}" />
+      <parent link="${prefix}${camera_name}_depth_frame" />
+      <child link="${prefix}${camera_name}_depth_optical_frame" />
+    </joint>
+    <link name="${prefix}${camera_name}_depth_optical_frame"/>
+
+    <joint name="${prefix}${camera_name}_infra1_joint" type="fixed">
+      <origin xyz="${infra1_xyz_offset}" rpy="${infra1_rpy_offset}" />
+      <parent link="${prefix}${camera_name}_link" />
+      <child link="${prefix}${camera_name}_infra1_frame" />
+    </joint>
+    <link name="${prefix}${camera_name}_infra1_frame"/>
+
+    <joint name="${prefix}${camera_name}_infra1_optical_joint" type="fixed">
+      <origin xyz="${optical_xyz_offset}" rpy="${optical_rpy_offset}" />
+      <parent link="${prefix}${camera_name}_infra1_frame" />
+      <child link="${prefix}${camera_name}_infra1_optical_frame" />
+    </joint>
+    <link name="${prefix}${camera_name}_infra1_optical_frame"/>
+
+    <joint name="${prefix}${camera_name}_infra2_joint" type="fixed">
+      <origin xyz="${infra2_xyz_offset}" rpy="${infra2_rpy_offset}" />
+      <parent link="${prefix}${camera_name}_link" />
+      <child link="${prefix}${camera_name}_infra2_frame" />
+    </joint>
+    <link name="${prefix}${camera_name}_infra2_frame"/>
+
+    <joint name="${prefix}${camera_name}_infra2_optical_joint" type="fixed">
+      <origin xyz="${optical_xyz_offset}" rpy="${optical_rpy_offset}" />
+      <parent link="${prefix}${camera_name}_infra2_frame" />
+      <child link="${prefix}${camera_name}_infra2_optical_frame" />
+    </joint>
+    <link name="${prefix}${camera_name}_infra2_optical_frame"/>
+
+    <joint name="${prefix}${camera_name}_color_joint" type="fixed">
+      <origin xyz="${color_xyz_offset}" rpy="${color_rpy_offset}" />
+      <parent link="${prefix}${camera_name}_link" />
+      <child link="${prefix}${camera_name}_color_frame" />
+    </joint>
+    <link name="${prefix}${camera_name}_color_frame"/>
+
+    <joint name="${prefix}${camera_name}_color_optical_joint" type="fixed">
+      <origin xyz="${optical_xyz_offset}" rpy="${optical_rpy_offset}" />
+      <parent link="${prefix}${camera_name}_color_frame" />
+      <child link="${prefix}${camera_name}_color_optical_frame" />
+    </joint>
+    <link name="${prefix}${camera_name}_color_optical_frame"/> -->
+  <gazebo reference="camera_depth_optical_frame">
+    <sensor name="dabai_dcw" type="rgbd_camera">
+      <camera>
+        <horizontal_fov>1.5184</horizontal_fov>
+        <image>
+          <width>424</width>
+          <height>240</height>
+        </image>
+        <clip>
+          <near>0.05</near>
+          <far>1.5</far>
+        </clip>
+      </camera>
+      <always_on>1</always_on>
+      <gz_frame_id>cam_1_link</gz_frame_id>
+      <topic>cam_1</topic>
+      <update_rate>2</update_rate>
+      <visualize>True</visualize>
     </sensor>
   </gazebo>
 </robot>

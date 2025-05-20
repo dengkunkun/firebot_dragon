@@ -4,9 +4,9 @@
     <xacro:property name="laser_width"        value="0.04"/>
 
    <joint name="laser_joint" type="fixed">
-     <parent link="chassis"/>
+     <parent link="base_link"/>
      <child link="laser_frame"/>
-     <origin xyz="0.28 0 0.353" rpy="0 0 0"/>
+     <origin xyz="0.28 0 0.41" rpy="0 0 0"/>
    </joint>
    <link name="laser_frame">
       <visual>
