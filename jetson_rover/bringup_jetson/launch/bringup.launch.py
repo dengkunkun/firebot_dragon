@@ -11,6 +11,7 @@ def generate_launch_description():
     diff_drive_robot_dir= get_package_share_directory('diff_drive_robot')
     imu_pkg_dir = get_package_share_directory('imu_hfi_a9')
     ydlidar_pkg_dir = get_package_share_directory('ydlidar_g4')
+    dabai_dcw_pkg_dir = get_package_share_directory('dabai_dcw')
     bringup_pkg_dir = get_package_share_directory('bringup_jetson')
     motion_pkg_dir = get_package_share_directory('motion_jetson')
     
@@ -47,7 +48,11 @@ def generate_launch_description():
             'scan_raw': scan_raw
         }.items()
     )
-    
+    dabai_dcw = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(dabai_dcw_pkg_dir, 'launch', 'dabai_dcw.launch.py')
+        ),
+    )
     # Include odom filter launch
     odom_filter_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -92,6 +97,7 @@ def generate_launch_description():
         # imu_launch,
         motion_launch,
         lidar_launch,
+        dabai_dcw,
         lidar_filter_launch,
         odom_filter_launch,
     ])

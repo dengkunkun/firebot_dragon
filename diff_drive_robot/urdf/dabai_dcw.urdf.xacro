@@ -47,7 +47,7 @@
     visualize:=true
     enable_collision:=false">
 
-    <link name="${prefix}camera_link">
+    <link name="${prefix}depth_cam_link">
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
@@ -75,7 +75,7 @@
 
     <joint name="${prefix}${camera_name}_joint" type="fixed">
       <parent link="${prefix}base_link"/>
-      <child link="${prefix}camera_link" />
+      <child link="${prefix}depth_cam_link" />
       <origin xyz="${xyz_offset}" rpy="${rpy_offset}"/>
     </joint>
 

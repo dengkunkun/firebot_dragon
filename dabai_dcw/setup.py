@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 import os
 from glob import glob
-package_name = 'rtabmap_jetson'
+package_name = 'dabai_dcw'
 
 setup(
     name=package_name,
@@ -17,7 +17,7 @@ setup(
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='cat',
-    maintainer_email='cat@todo.todo',
+    maintainer_email='13109894430@163.com',
     description='TODO: Package description',
     license='TODO: License declaration',
     tests_require=['pytest'],

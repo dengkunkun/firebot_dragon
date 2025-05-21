@@ -310,7 +310,7 @@ class Controller(Node):
         # msg.linear.x *= self.linear_factor
         # msg.linear.y *= self.linear_factor
         # msg.angular.z *= self.angular_factor
-        self.get_logger().info(f'\033[1;32m m/s {msg.linear.x} {msg.linear.y} {msg.angular.z}\033[0m')
+        self.get_logger().debug(f'\033[1;32m m/s {msg.linear.x} {msg.linear.y} {msg.angular.z}\033[0m')
         self.linear_x = msg.linear.x
         self.linear_y = msg.linear.y
         if abs(msg.linear.y) > 1e-8:  #如果转弯太急，则不允许前进，只做转弯
@@ -321,7 +321,7 @@ class Controller(Node):
 
         self.angular_z = msg.angular.z
         speeds = self.mecanum.set_velocity(self.linear_x, 0.0, self.angular_z)
-        self.get_logger().info(f'\033[1;32m rps {speeds}\033[0m')
+        self.get_logger().debug(f'\033[1;32m rps {speeds}\033[0m')
         self.motor_pub.publish(speeds)
 
 
@@ -378,8 +378,8 @@ class Controller(Node):
         self.odom.header.stamp = self.clock.now().to_msg()
         self.linear_x, self.angular_z = self.mecanum.get_velocity(msg.data[0].rps, msg.data[1].rps)
         if self.linear_x != 0:
-            self.get_logger().info(f'\033[1;32m rps {msg.data[0].rps} {msg.data[1].rps} \033[0m')
-            self.get_logger().info(f'\033[1;32m m/s {self.linear_x} {self.angular_z} dt:{self.dt} \033[0m')
+            self.get_logger().debug(f'\033[1;32m rps {msg.data[0].rps} {msg.data[1].rps} \033[0m')
+            self.get_logger().debug(f'\033[1;32m m/s {self.linear_x} {self.angular_z} dt:{self.dt} \033[0m')
         
         self.x += math.cos(self.pose_yaw)*self.linear_x*self.dt - math.sin(self.pose_yaw)*self.linear_y*self.dt
         self.y += math.sin(self.pose_yaw)*self.linear_x*self.dt + math.cos(self.pose_yaw)*self.linear_y*self.dt
@@ -394,7 +394,7 @@ class Controller(Node):
         self.odom.twist.twist.linear.y = self.linear_y
         self.odom.twist.twist.angular.z = self.angular_z
         if self.linear_x != 0:
-            self.get_logger().info(f'\033[1;32m{self.odom.pose.pose.position.x} {self.odom.pose.pose.position.y} {self.odom.twist.twist.linear.x} {self.odom.twist.twist.linear.y}\033[0m')
+            self.get_logger().debug(f'\033[1;32m{self.odom.pose.pose.position.x} {self.odom.pose.pose.position.y} {self.odom.twist.twist.linear.x} {self.odom.twist.twist.linear.y}\033[0m')
 
         # self.odom_trans.header.stamp = self.clock.now().to_msg()
         # self.odom_trans.transform.translation.x = self.odom.pose.pose.position.x

@@ -169,7 +169,7 @@
       imu0_nodelay: false
       imu0_differential: false
       imu0_relative: true
-      imu0_queue_size: 4
+      imu0_queue_size: 10
       #imu0_pose_rejection_threshold: 20.0                 # Note the difference in parameter names
       #imu0_twist_rejection_threshold: 1.542              #
       #imu0_linear_acceleration_rejection_threshold: 10.0  #
