@@ -26,14 +26,20 @@ endif()
 
 
 find_package(std_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/FireInfo.msg"
   "msg/ChassisCtrl.msg"
   "msg/ChassisSpeed.msg"
-  DEPENDENCIES std_msgs # Add packages that above messages depend on, in this case geometry_msgs for Sphere.msg
+  "srv/SetInitialPoseSrv.srv"
+  "srv/SetNavigationGoalSrv.srv"
+  "action/RotateSearch.action" 
+  "action/FireExtinguishing.action"
+  DEPENDENCIES std_msgs geometry_msgs action_msgs# Add packages that above messages depend on, in this case geometry_msgs for Sphere.msg
 )
-
+ament_export_dependencies(rosidl_default_runtime geometry_msgs)
+ament_export_dependencies(rosidl_default_runtime std_msgs)
 
 ament_package()

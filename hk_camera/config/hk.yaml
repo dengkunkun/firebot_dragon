@@ -1,0 +1,7 @@
+/**:
+  ros__parameters:
+    ip: HM-TD2B28T-3-T120250109AACHEA3538378.local
+    username: admin
+    password: ubuntu_define
+    enbale_pub_picture: true
+    fire_info_timer_period_ms: 200

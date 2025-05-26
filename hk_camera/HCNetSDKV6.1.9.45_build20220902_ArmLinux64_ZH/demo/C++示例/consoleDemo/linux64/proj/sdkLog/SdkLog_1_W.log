@@ -1,0 +1,18 @@
+[2025-05-22 13:56:48.156][INF] The COM:HCCoreBase ver is 6.1.4.15, 2020_03_05. Async:1.
+[2025-05-22 13:56:48.156][INF] The COM:Core ver is 6.1.9.45, 2022_09_02. Async:1.
+[2025-05-22 13:56:48.156][INF] This HCNetSDK ver is 6.1.9.45 Ver 2022_09_02.
+[2025-05-22 13:56:48.157][INF] Login dev HM-TD2B28T-3-T120250109AACHEA3538378.local:8000.
+[2025-05-22 13:56:48.157][INF] dwTotalNum[2048]
+[2025-05-22 13:56:48.350][INF] Private connect 169.254.90.170:8000 sock=3 this=0xcf0e87a4 cmd=0x10000 port=54240
+[2025-05-22 13:56:48.351][INF] LogonDev1 in[169.254.90.170:8000]
+[2025-05-22 13:56:48.351][DBG] CCoreGlobalCtrlBase::LoadDSo, HPR_LoadDSo Succ, Path[/home/cat/firebot_dragon/src/hk_camera/HCNetSDKV6.1.9.45_build20220902_ArmLinux64_ZH/demo/C++示例/consoleDemo/linux64/proj/../MakeAll/libcrypto.so.1.1], hHandleRet[-821104432]
+[2025-05-22 13:56:48.351][DBG] CCoreGlobalCtrlBase::LoadDSo, HPR_LoadDSo Succ, Path[/home/cat/firebot_dragon/src/hk_camera/HCNetSDKV6.1.9.45_build20220902_ArmLinux64_ZH/demo/C++示例/consoleDemo/linux64/proj/../MakeAll/libssl.so.1.1], hHandleRet[-821100688]
+[2025-05-22 13:56:48.352][INF] SSLTRANSAPI::LoadAPI, libeay, Load Real Path[/home/cat/firebot_dragon/src/hk_camera/HCNetSDKV6.1.9.45_build20220902_ArmLinux64_ZH/demo/C++示例/consoleDemo/linux64/proj/../MakeAll/libcrypto.so.1.1]
+[2025-05-22 13:56:48.352][INF] SSLTRANSAPI::IsAllAPILoaded, SSL_library_init Unload
+[2025-05-22 13:56:48.352][INF] OpenSSL, Not All Function Loaded!
+[2025-05-22 13:56:48.352][INF] SSLTRANSAPI::PrintVersion, OpenSSL version info [OpenSSL 1.1.1i  8 Dec 2020]
+[2025-05-22 13:56:48.352][INF] CSSLTrans::SSLCtxInit, dwSSLVersion[6], m_fnTLSServerMethod
+[2025-05-22 13:56:48.353][ERR] CSSLTrans::SSLTrans_CTX_Load_CA, invalid path[/home/cat/firebot_dragon/src/hk_camera/HCNetSDKV6.1.9.45_build20220902_ArmLinux64_ZH/demo/C++示例/consoleDemo/linux64/proj/../MakeAll/cert/\]
+[2025-05-22 13:56:50.925][INF] COM_Logout[0][1]
+[2025-05-22 13:56:50.929][DBG] CUserMgr::UnRegisterHeartProxy[0]
+[2025-05-22 13:56:50.930][INF] Private connect 169.254.90.170:8000 sock=3 this=0xcf0e87a4 cmd=0x10100 port=40076

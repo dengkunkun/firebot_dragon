@@ -7,16 +7,16 @@ voxel_layer:
         z_voxels: 40
         # min_obstacle_height: 0.05
         max_obstacle_height: 2.0
-        mark_threshold: 1  #对应纸盒，2无法识别，0导致太多障碍，无法执行
+        mark_threshold: 2  # dabai_dcw 对应纸盒，2无法识别，0导致太多障碍，无法执行
         # unknown_threshold: 15 
-        observation_sources: dabai_dcw
-        dabai_dcw:
+        observation_sources: depth_cam
+        depth_cam:
           topic: /depth_cam/depth/points
           data_type: "PointCloud2"
           raytrace_min_range: 0.2
-          raytrace_max_range: 3.0
+          raytrace_max_range: 8.0
           obstacle_min_range: 0.2
-          obstacle_max_range: 2.5
+          obstacle_max_range: 7.
           min_obstacle_height: 0.05
           max_obstacle_height: 2.0
           clearing: True

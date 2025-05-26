@@ -72,6 +72,8 @@
         "charconv": "cpp",
         "source_location": "cpp",
         "format": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "csignal": "cpp",
+        "cfenv": "cpp"
     }
 }

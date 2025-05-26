@@ -1,0 +1,29 @@
+# Request
+geometry_msgs/PoseStamped target_pose  # 目标位置
+float32 timeout_seconds                # 超时时间，单位：秒
+
+---
+# Result
+bool success                          # true: 灭火成功, false: 灭火失败
+string message                        # 结果描述信息
+
+---
+# Feedback
+uint8 current_state                   # 当前状态
+geometry_msgs/PoseStamped current_pose # 当前机器人位置
+float32 fire_distance                 # 火焰距离，单位：米
+
+# 定义状态常量
+# Planning & Navigation states
+uint8 STATE_PLANNING_FAILED = 0
+uint8 STATE_NAVIGATING = 1
+uint8 STATE_NAVIGATION_FAILED = 2
+uint8 STATE_NAVIGATION_SUCCEEDED = 3
+# Scanning states
+uint8 STATE_SCANNING = 4
+uint8 STATE_SCANNING_NO_FIRE = 5
+uint8 STATE_SCANNING_SUCCEEDED = 6
+# Extinguishing states
+uint8 STATE_EXTINGUISHING = 7
+uint8 STATE_EXTINGUISHING_SUCCEEDED = 8
+uint8 STATE_EXTINGUISHING_FAILED = 9

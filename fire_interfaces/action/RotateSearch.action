@@ -1,0 +1,13 @@
+# Goal definition
+float32 target_rotation_degrees   # Desired total rotation in degrees (positive for CCW)
+float32 angular_speed_rad_s     # Desired angular speed in rad/s (positive for CCW, negative for CW)
+float32 timeout_seconds           # Timeout for the entire action in seconds
+---
+# Result definition
+bool success                      # True if rotation completed successfully (met target or canceled gracefully)
+float32 actual_rotated_degrees    # Actual degrees rotated at the end
+string message                    # Outcome message (e.g., "Success", "Canceled", "Timeout")
+---
+# Feedback definition
+float32 degrees_rotated_so_far    # Degrees rotated so far (from odom)
+float32 time_elapsed_seconds      # Time elapsed since action start
