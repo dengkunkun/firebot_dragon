@@ -4,7 +4,7 @@
 #include <cv_bridge/cv_bridge.hpp>
 #include <opencv2/opencv.hpp>
 #include "HCNetSDK.h"
-#include "LinuxPlayM4.h"
+// #include "LinuxPlayM4.h"  //仅windows下可用
 
 using rclcpp_lifecycle::LifecycleNode;
 using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
@@ -14,55 +14,58 @@ static rclcpp::Clock::SharedPtr g_clock;
 
 static int lPort = -1;
 
-void CALLBACK DecCBFun(int nPort, char *pBuf, int nSize,
-                       FRAME_INFO *pFrameInfo,
-                       void *nReserved1, int /*nReserved2*/)
+// void CALLBACK DecCBFun(int nPort, char *pBuf, int nSize,
+//                        FRAME_INFO *pFrameInfo,
+//                        void *nReserved1, int /*nReserved2*/)
+// {
+//     if (pFrameInfo->nType == T_YV12)
+//     {
+//         // 解码后的视频数据为YV12格式，需转换为BGR
+//         int width = pFrameInfo->nWidth;
+//         int height = pFrameInfo->nHeight;
+//         cv::Mat yv12(height + height / 2, width, CV_8UC1, (unsigned char *)pBuf);
+//         cv::Mat bgr;
+//         cv::cvtColor(yv12, bgr, cv::COLOR_YUV2BGR_YV12);
+
+//         auto msg = cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", bgr).toImageMsg();
+//         msg->header.stamp = g_clock->now();
+//         g_pub->publish(*msg);
+//     }
+// }
+
+// void CALLBACK g_RealDataCallBack_V30(LONG lRealHandle, DWORD dwDataType, BYTE *pBuffer, DWORD dwBufSize, void *dwUser)
+// {
+//     switch (dwDataType)
+//     {
+//     case NET_DVR_SYSHEAD:
+//         if (lPort >= 0)
+//             break;
+//         if (!PlayM4_GetPort(&lPort))
+//             break;
+//         if (dwBufSize > 0)
+//         {
+//             if (!PlayM4_SetStreamOpenMode(lPort, STREAME_REALTIME))
+//                 break;
+//             if (!PlayM4_OpenStream(lPort, pBuffer, dwBufSize, 1024 * 1024))
+//                 break;
+//             PlayM4_SetDecCallBackExMend(lPort, DecCBFun, NULL, 0, NULL);
+//             if (!PlayM4_Play(lPort, 0))
+//                 break;
+//         }
+//         break;
+//     case NET_DVR_STREAMDATA:
+//     default:
+//         if (dwBufSize > 0 && lPort != -1)
+//         {
+//             PlayM4_InputData(lPort, pBuffer, dwBufSize);
+//         }
+//         break;
+//     }
+// }
+void fStdDataCallBack (LONG lRealHandle, DWORD dwDataType, BYTE *pBuffer,DWORD dwBufSize,DWORD dwUser)
 {
-    if (pFrameInfo->nType == T_YV12)
-    {
-        // 解码后的视频数据为YV12格式，需转换为BGR
-        int width = pFrameInfo->nWidth;
-        int height = pFrameInfo->nHeight;
-        cv::Mat yv12(height + height / 2, width, CV_8UC1, (unsigned char *)pBuf);
-        cv::Mat bgr;
-        cv::cvtColor(yv12, bgr, cv::COLOR_YUV2BGR_YV12);
 
-        auto msg = cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", bgr).toImageMsg();
-        msg->header.stamp = g_clock->now();
-        g_pub->publish(*msg);
-    }
 }
-
-void CALLBACK g_RealDataCallBack_V30(LONG lRealHandle, DWORD dwDataType, BYTE *pBuffer, DWORD dwBufSize, void *dwUser)
-{
-    switch (dwDataType)
-    {
-    case NET_DVR_SYSHEAD:
-        if (lPort >= 0)
-            break;
-        if (!PlayM4_GetPort(&lPort))
-            break;
-        if (dwBufSize > 0)
-        {
-            if (!PlayM4_SetStreamOpenMode(lPort, STREAME_REALTIME))
-                break;
-            if (!PlayM4_OpenStream(lPort, pBuffer, dwBufSize, 1024 * 1024))
-                break;
-            PlayM4_SetDecCallBackExMend(lPort, DecCBFun, NULL, 0, NULL);
-            if (!PlayM4_Play(lPort, 0))
-                break;
-        }
-        break;
-    case NET_DVR_STREAMDATA:
-    default:
-        if (dwBufSize > 0 && lPort != -1)
-        {
-            PlayM4_InputData(lPort, pBuffer, dwBufSize);
-        }
-        break;
-    }
-}
-
 class HKCameraDecodeNode : public LifecycleNode
 {
 public:
@@ -95,23 +98,31 @@ public:
     {
         g_pub->on_activate();
 
+        DWORD dwUser=0; 
         NET_DVR_PREVIEWINFO struPlayInfo = {0};
 #if (defined(_WIN32) || defined(_WIN_WCE))
         struPlayInfo.hPlayWnd = NULL;
 #elif defined(__linux__)
         struPlayInfo.hPlayWnd = 0;
 #endif
-        struPlayInfo.lChannel = 2;
-        struPlayInfo.dwLinkMode = 0;
-        struPlayInfo.bBlocked = 1;
-        struPlayInfo.dwDisplayBufNum = 2;
+        struPlayInfo.lChannel = 1;  //通道号
+        struPlayInfo.byPreviewMode=0; //预览模式，0-正常预览，1-延迟预览
+        struPlayInfo.dwLinkMode = 0; // 0：TCP方式,1：UDP方式,2：多播方式,3 - RTP方式，4-RTP/RTSP,5-RSTP/HTTP
+        struPlayInfo.bBlocked = 0; //0-非阻塞取流, 1-阻塞取流,
+        struPlayInfo.dwDisplayBufNum = 5;
+        struPlayInfo.byProtoType; //应用层取流协议，0-私有协议，1-RTSP协议,2-SRTP码流加密
 
-        lRealPlayHandle_ = NET_DVR_RealPlay_V40(lUserID_, &struPlayInfo, g_RealDataCallBack_V30, NULL);
+        lRealPlayHandle_ = NET_DVR_RealPlay_V40(lUserID_, &struPlayInfo, NULL, NULL);
         if (lRealPlayHandle_ < 0)
         {
             RCLCPP_ERROR(this->get_logger(), "NET_DVR_RealPlay_V40 error: %d", NET_DVR_GetLastError());
             return CallbackReturn::FAILURE;
         }
+        if(NET_DVR_SetStandardDataCallBack(lUserID_,fStdDataCallBack,dwUser)!=0){
+            RCLCPP_ERROR(this->get_logger(), "NET_DVR_SetStandardDataCallBack error: %d", NET_DVR_GetLastError());
+            return CallbackReturn::FAILURE;
+        }
+
         return CallbackReturn::SUCCESS;
     }
 

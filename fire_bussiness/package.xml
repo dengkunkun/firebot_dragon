@@ -16,7 +16,8 @@
   <depend>std_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>fire_interfaces</depend>
-
+  <depend>lifecycle_msgs</depend>
+  <depend>launch_ros</depend>
   <export>
     <build_type>ament_python</build_type>
   </export>

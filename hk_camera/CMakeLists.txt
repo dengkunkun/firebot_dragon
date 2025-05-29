@@ -64,45 +64,45 @@ install(TARGETS hk_camera_pub_jpeg
 
 
 
-#   add_executable(hk_camera_pub_decode src/hk_camera_pub_decode.cpp)
-#   ament_target_dependencies(hk_camera_pub_decode
-#     rclcpp
-#     rclcpp_lifecycle
-#     sensor_msgs
-#     cv_bridge
-#     OpenCV
-#   )
+  add_executable(hk_camera_pub_decode src/hk_camera_pub_decode.cpp)
+  ament_target_dependencies(hk_camera_pub_decode
+    rclcpp
+    rclcpp_lifecycle
+    sensor_msgs
+    cv_bridge
+    OpenCV
+  )
   
-#   target_link_libraries(hk_camera_pub_decode
-#     ${OpenCV_LIBS}
-#     hcnetsdk
-#     HCCore
-#     hpr
-#     # NPQos
-#     PlayCtrl
-#     SuperRender
-#     z
-#     crypto
-#     ssl
-#     AudioRender
-#     # openal
-#     HCAlarm
-#     HCCoreDevCfg
-#     HCDisplay
-#     HCGeneralCfgMgr
-#     HCIndustry
-#     HCPlayBack
-#     HCPreview
-#     HCVoiceTalk
-#     iconv2
-#     StreamTransClient
-#     SystemTransform
-#     analyzedata
-#     AudioIntercom
-#   )
+  target_link_libraries(hk_camera_pub_decode
+    ${OpenCV_LIBS}
+    hcnetsdk
+    HCCore
+    hpr
+    # NPQos
+    PlayCtrl
+    SuperRender
+    z
+    crypto
+    ssl
+    AudioRender
+    # openal
+    HCAlarm
+    HCCoreDevCfg
+    HCDisplay
+    HCGeneralCfgMgr
+    HCIndustry
+    HCPlayBack
+    HCPreview
+    HCVoiceTalk
+    iconv2
+    StreamTransClient
+    SystemTransform
+    analyzedata
+    AudioIntercom
+  )
   
-#   install(TARGETS hk_camera_pub_decode
-#     DESTINATION lib/${PROJECT_NAME})
+  install(TARGETS hk_camera_pub_decode
+    DESTINATION lib/${PROJECT_NAME})
 
 
 add_executable(fireinfo_pub src/fireinfo_pub.cpp)

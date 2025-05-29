@@ -2,6 +2,8 @@
   ros__parameters:
     ip: HM-TD2B28T-3-T120250109AACHEA3538378.local
     username: admin
-    password: ubuntu_define
+    password: ubuntu_define  #后面放到.env里，放置被泄露
     enbale_pub_picture: true
     fire_info_timer_period_ms: 200
+    enable_color: true      # 新增：启用彩色图像发布
+    enable_ir: true         # 新增：启用红外图像发布

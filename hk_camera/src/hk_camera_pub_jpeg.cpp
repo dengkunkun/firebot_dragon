@@ -11,7 +11,7 @@ using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface
 
 class HKCameraLifecycleNode : public LifecycleNode {
 public:
-    HKCameraLifecycleNode() : LifecycleNode("hk_camera_pub") {
+    HKCameraLifecycleNode() : LifecycleNode("hk_camera_pub_jpeg") {
 
         this->declare_parameter<std::string>("ip", "192.168.1.64");
         this->declare_parameter<std::string>("username", "admin");
@@ -111,8 +111,8 @@ private:
         DWORD dwPicSize = 10*1024 * 1024; // 1MB缓冲区，按需调整
         static std::vector<BYTE> jpegBuf(dwPicSize);
         DWORD retPicSize = 0;
-
-        if (!NET_DVR_CaptureJPEGPicture_NEW(lUserID_, 2, &jpegPara, reinterpret_cast<char*>(jpegBuf.data()), dwPicSize, &retPicSize)) {
+        //1 color 2 ir
+        if (!NET_DVR_CaptureJPEGPicture_NEW(lUserID_, 1, &jpegPara, reinterpret_cast<char*>(jpegBuf.data()), dwPicSize, &retPicSize)) {
             RCLCPP_ERROR(this->get_logger(), "CaptureJPEGPicture_NEW failed: %d", NET_DVR_GetLastError());
             return;
         }

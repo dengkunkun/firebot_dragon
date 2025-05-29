@@ -1,0 +1,59 @@
+launch:
+- arg:
+    name: device
+    default: "0" # This camera_ros node might be separate from your depth_cam
+
+- node_container:
+    pkg: rclcpp_components
+    exec: component_container
+    name: perception_container # Renamed for clarity, can keep apriltag_container
+    namespace: ""
+    composable_node:
+    # This camera_ros instance might be for a different camera.
+    # If /depth_cam topics are from another source, this can remain as is or be removed if not used.
+    # - pkg: camera_ros
+    #   plugin: camera::CameraNode
+    #   name: usb_camera # Renamed for clarity if it's a USB camera
+    #   namespace: camera # This will result in topics like /camera/usb_camera/image_raw
+    #   param:
+    #   - name: camera_id # Changed from 'camera' to 'camera_id' for clarity, check camera_ros docs
+    #     value: $(var device)
+    #   extra_arg:
+    #   - name: use_intra_process_comms
+    #     value: "True"
+
+    # ImageProc for the /synced topics
+    - pkg: image_proc
+      plugin: image_proc::RectifyNode
+      name: rectify_depth_color # Unique name
+      namespace: synced # Process images in this namespace
+      param: # Add param section here
+      - name: queue_size # Optionally adjust queue size
+        value: 20 
+      remap:
+      - from: image
+        to: image_raw # Will subscribe to /synced/image_raw
+      - from: camera_info
+        to: camera_info # Will subscribe to /synced/camera_info
+      # Output will be /synced/image_rect
+      extra_arg:
+      - name: use_intra_process_comms
+        value: "True"
+
+    # AprilTag node using the rectified image from depth_cam's color sensor
+    - pkg: apriltag_ros
+      plugin: AprilTagNode
+      name: apriltag
+      namespace: apriltag # Results in topics like /apriltag/detections
+      remap:
+      # Subscribe to the rectified image from the image_proc instance above
+      - from: image_rect # Relative topic name, will be /apriltag/image_rect by default
+        to: /synced/image_rect # Explicitly map to the output of rectify_depth_color
+      # Subscribe to the camera_info corresponding to the depth_cam color image
+      - from: camera_info # Relative topic name, will be /apriltag/camera_info by default
+        to: /synced/camera_info # Explicitly map
+      param:
+      - from: $(find-pkg-share bringup_jetson)/config/tags_36h11.yaml # Ensure this path is correct
+      extra_arg:
+      - name: use_intra_process_comms
+        value: "True"
