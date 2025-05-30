@@ -5,7 +5,7 @@
 
   <xacro:macro name="hk_ir_camera" params="
     prefix:=''
-    camera_name:='hk_ir_camera'
+    camera_name:='hk_camera'
     parent:='base_link'
     xyz_offset:='0.30 0.25 0.22'
     rpy_offset:='0 0 0'
@@ -47,7 +47,7 @@
     visualize:=true
     enable_collision:=false">
 
-    <link name="${prefix}hk_ir_camera_link">
+    <link name="${prefix}${camera_name}_optical_frame">
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
@@ -74,8 +74,8 @@
     </link>
 
     <joint name="${prefix}${camera_name}_joint" type="fixed">
-      <parent link="${prefix}base_link"/>
-      <child link="${prefix}hk_ir_camera_link" />
+      <parent link="base_link"/>
+      <child link="${prefix}${camera_name}_optical_frame" />
       <origin xyz="${xyz_offset}" rpy="${rpy_offset}"/>
     </joint>
   </xacro:macro>

@@ -45,5 +45,29 @@
       xyz_offset="0.28 0 0.51"
       rpy_offset="0 0 0"/> -->
       <xacro:astra_pro_plus/>
-      <xacro:hk_ir_camera/>
+      <xacro:hk_ir_camera
+        prefix="left_"
+        xyz_offset="0.27 0.164 0.423"
+      />
+      <xacro:hk_ir_camera
+        prefix="right_"
+        xyz_offset="0.27 -0.13 0.423"
+      />
+
+    <joint name="stereo_ir_camera_joint" type="fixed">
+      <parent link="base_link"/>  <!-- 或者其他合适的父link -->
+      <child link="stereo_ir_camera"/> <!-- 虚拟的 -->
+      <origin xyz="0.27 0.017 0.423" rpy="0 0 0"/>  <!-- 根据实际安装位置调整 -->
+    </joint>
+
+    <link name="stereo_ir_camera">
+      <visual>
+        <geometry>
+          <box size="0 0 0"/>  <!-- 双相机支架的大致尺寸 -->
+        </geometry>
+        <material name="black">
+          <color rgba="0.2 0.2 0.2 1"/>
+        </material>
+      </visual>
+    </link>
 </robot>
