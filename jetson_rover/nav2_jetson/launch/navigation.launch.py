@@ -28,6 +28,7 @@ def launch_setup(context):
     robot_name = LaunchConfiguration('robot_name', default='/').perform(context)
     master_name = LaunchConfiguration('master_name', default='/').perform(context)
     use_teb = LaunchConfiguration('use_teb', default='false').perform(context)
+    use_rtabmap = LaunchConfiguration('use_rtabmap', default='false').perform(context)
     use_stvl_str = LaunchConfiguration('use_stvl', default='false').perform(context)
 
     sim_arg = DeclareLaunchArgument('sim', default_value=sim)
@@ -78,6 +79,7 @@ def launch_setup(context):
             'use_namespace': use_namespace,
             'autostart': 'true',
             'use_teb': use_teb,
+            'rtabmap': use_rtabmap,
         }.items(),
     )
 

@@ -395,14 +395,14 @@ private:
                         "视差角: %.3f度 (%.3f弧度), 基线距离: %.4f米",
                         angle_diff_deg, angle_diff_rad, baseline);
 
-            if (std::abs(angle_diff_rad) < 0.01)
-            { // 角度差太小（约0.57度）
-                RCLCPP_WARN(this->get_logger(), "视差角太小，无法准确计算深度");
-                fire_position.x = 0.0;
-                fire_position.y = 0.0;
-                fire_position.z = 10.0; // 默认10米
-                return;
-            }
+            // if (std::abs(angle_diff_rad) < 0.01)
+            // { // 角度差太小（约0.57度）
+            //     RCLCPP_WARN(this->get_logger(), "视差角太小，无法准确计算深度");
+            //     fire_position.x = 0.0;
+            //     fire_position.y = 0.0;
+            //     fire_position.z = 10.0; // 默认10米
+            //     return;
+            // }
 
             // 使用简单三角测量计算距离
             // 对于小角度：distance ≈ baseline / angle_diff_rad

@@ -10,7 +10,7 @@
     enable_ir: true         # 新增：启用红外图像发布
 
         # 相机标定参数
-    camera_distance: 0.294     # 相机间距（米）
+    camera_distance: 0.2     # 相机间距（米）
     principal_point_x: 0.5      # 主点x（比例，0.5表示图像中心）
     principal_point_y: 0.5      # 主点y（比例）
     

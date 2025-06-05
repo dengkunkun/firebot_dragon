@@ -4,7 +4,7 @@
 
     <xacro:macro name="imu_sensor" params="
         prefix:=''
-        parent:='chassis'
+        parent:='base_link'
         frame_id:='imu'
         xyz_offset:='0.34 0 0'
         rpy_offset:='0 0 0'
@@ -55,7 +55,7 @@
         <joint name="${prefix}${frame_id}_joint" type="fixed">
             <parent link="${prefix}${parent}"/>
             <child link="${prefix}${frame_id}_link" />
-            <origin xyz="0.16 -0.1 ${-chassis_link_h/2}" rpy="${rpy_offset}"/>
+            <origin xyz="0.16 -0.1 0.055" rpy="${rpy_offset}"/>
         </joint>
 
         <gazebo reference="${prefix}${frame_id}_link">

@@ -32,9 +32,9 @@
 
     <xacro:imu_sensor
       prefix="$(arg prefix)"
-      parent="chassis"
+      parent="base_link"
       frame_id="imu"
-      xyz_offset="0 0 0.006"
+      xyz_offset="0.16 -0.1 0.055"
       rpy_offset="0 0 0"
       update_rate="15.0"
       topic_name="imu/data"/>
