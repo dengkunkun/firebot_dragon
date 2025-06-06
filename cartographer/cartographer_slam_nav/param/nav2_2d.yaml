@@ -128,11 +128,11 @@ controller_server:
       debug_trajectory_details: True
       min_vel_x: 0.0
       min_vel_y: 0.0
-      max_vel_x: 0.8
+      max_vel_x: 0.51
       max_vel_y: 0.0
       max_vel_theta: 1.0
       min_speed_xy: 0.0
-      max_speed_xy: 0.8
+      max_speed_xy: 0.51
       min_speed_theta: 0.0
       acc_lim_x: 2.5
       acc_lim_y: 0.0
@@ -152,7 +152,7 @@ controller_server:
       short_circuit_trajectory_evaluation: True
       stateful: True
       critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
-      BaseObstacle.scale: 0.8  # 提高障碍物惩罚权重
+      BaseObstacle.scale: 0.5  # 提高障碍物惩罚权重
       PathAlign.scale: 32.0
       PathAlign.forward_point_distance: 0.1
       GoalAlign.scale: 24.0
@@ -179,7 +179,8 @@ local_costmap:
       robot_radius: 0.4            # 适应你的0.4m机器人
       transform_tolerance: 0.5      # 增加变换容限
       
-      plugins: ["voxel_layer", "inflation_layer"]
+      plugins: ["obstacle_layer", "inflation_layer"]
+      # plugins: ["obstacle_layer","spatio_temporal_voxel_layer","denoise_layer", "inflation_layer"]
       
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
@@ -206,7 +207,68 @@ local_costmap:
           raytrace_min_range: 0.0 
           obstacle_max_range: 3.5 # 增大障碍物检测距离
           obstacle_min_range: 0.0
-          
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: True
+        observation_sources: scan
+        scan:
+          topic: /scan
+          raytrace_min_range: 0.20
+          obstacle_min_range: 0.20
+          max_obstacle_height: 2.0
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+      
+      # spatio_temporal_voxel_layer:  #相机太高，效果不好
+      #   plugin: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"
+      #   enabled:               true
+      #   voxel_decay:           20.     #seconds if linear, e^n if exponential
+      #   decay_model:           0      #0=linear, 1=exponential, -1=persistent
+      #   voxel_size:            0.05   #meters
+      #   track_unknown_space:   true   #default space is unknown
+      #   observation_persistence: 0.0  #seconds
+      #   max_obstacle_height:   2.0    #meters
+      #   mark_threshold:        2      #voxel height  #勉强能用，地面还是有噪声
+      #   update_footprint_enabled: true
+      #   combination_method:    1      #1=max, 0=override
+      #   obstacle_range:        5.0    #meters
+      #   origin_z:              0.0    #meters
+      #   publish_voxel_map:     true   # default off
+      #   transform_tolerance:   0.3    # seconds
+      #   # mapping_mode:          false  # default off, saves map not for navigation
+      #   # map_save_duration:     60     #default 60s, how often to autosave
+      #   observation_sources:   rgbd1_clear rgbd1_mark
+      #   rgbd1_mark:
+      #     data_type: PointCloud2
+      #     topic: /depth_cam/depth/points
+      #     marking: true
+      #     clearing: false
+      #     min_obstacle_height: 0.05     #default 0, meters
+      #     max_obstacle_height: 2.0     #defaule 3, meters
+      #     expected_update_rate: 0.0    #default 0, if not updating at this rate at least, remove from buffer
+      #     observation_persistence: 0.0 #default 0, use all measurements taken during now-value, 0=latest 
+      #     inf_is_valid: false          #default false, for laser scans
+      #     clear_after_reading: true    #default false, clear the buffer after the layer gets readings from it
+      #     # filter: "voxel"              #default passthrough, apply "voxel", "passthrough", or no filter to sensor data, recommended to have at one filter on
+      #     # voxel_min_points: 1          #default 0, minimum points per voxel for voxel filter
+      #   rgbd1_clear:
+      #     enabled: true                #default true, can be toggled on/off with associated service call
+      #     data_type: PointCloud2
+      #     topic: /depth_cam/depth/points
+      #     marking: false
+      #     clearing: true
+      #     min_z: 0.1                   #default 0, meters
+      #     max_z: 7.0                   #default 10, meters
+      #     vertical_fov_angle: 0.92      #default 0.7, radians
+      #     horizontal_fov_angle: 1.45   #default 1.04, radians
+      #     decay_acceleration: 1.       #default 0, 1/s^2. If laser scanner MUST be 0
+      #     model_type: 0                #default 0 (depth camera). Use 1 for 3D Lidar
+      # denoise_layer:
+      #   plugin: "nav2_costmap_2d::DenoiseLayer"
+      #   enabled: true
+      #   minimal_group_size: 3
+      #   group_connectivity_type: 8
       always_send_full_costmap: True
 
 global_costmap:
@@ -310,7 +372,7 @@ behavior_server:
     transform_timeout: 0.1
     simulate_ahead_time: 2.0
     max_rotational_vel: 1.0
-    min_rotational_vel: 0.4
+    min_rotational_vel: 0.1
     rotational_acc_lim: 3.2
     # enable_stamped_cmd_vel: true
 
@@ -382,7 +444,7 @@ velocity_smoother:
     smoothing_frequency: 30.0
     scale_velocities: false
     feedback: "OPEN_LOOP"
-    max_velocity: [0.8, 0.0, 2.5]  # 与DWB一致
+    max_velocity: [0.51, 0.0, 2.5]  # 与DWB一致
     min_velocity: [-0.5, 0.0, -2.5]
     deadband_velocity: [0.0, 0.0, 0.0]
     velocity_timeout: 1.0

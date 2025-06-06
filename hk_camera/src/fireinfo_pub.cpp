@@ -34,6 +34,7 @@ public:
         // 相机参数 - 使用FOV角度而不是像素焦距
         this->declare_parameter<double>("horizontal_fov", 50.0);   // 水平FOV角度
         this->declare_parameter<double>("vertical_fov", 37.2);     // 垂直FOV角度
+        this->declare_parameter<double>("fire_tempture_threshold", 50.0); // 火源温度阈值（摄氏度）
         this->declare_parameter<double>("principal_point_x", 0.5); // 主点x（比例）
         this->declare_parameter<double>("principal_point_y", 0.5); // 主点y（比例）
 
@@ -43,10 +44,10 @@ public:
         this->declare_parameter<std::string>("world_frame", "base_link");
         this->declare_parameter<std::string>("stereo_ir_camera_frame", "stereo_ir_camera");
         // 滤波参数
-        this->declare_parameter<double>("kalman_process_noise", 0.001);
-        this->declare_parameter<double>("kalman_measurement_noise", 0.01);
-        this->declare_parameter<int>("moving_average_window", 5);
-        this->declare_parameter<double>("outlier_threshold", 0.2); // 异常值阈值（米）
+        // this->declare_parameter<double>("kalman_process_noise", 0.001);
+        // this->declare_parameter<double>("kalman_measurement_noise", 0.01);
+        // this->declare_parameter<int>("moving_average_window", 5);
+        // this->declare_parameter<double>("outlier_threshold", 0.2); // 异常值阈值（米）
 
         // 添加火焰位置TF相关参数
         this->declare_parameter<std::string>("fire_frame_id", "fire_position");
@@ -103,8 +104,11 @@ public:
         std::string camera_username = this->get_parameter("username").as_string();
         std::string camera_password = this->get_parameter("password").as_string();
         camera_distance_ = this->get_parameter("camera_distance").as_double();
+        horizontal_fov_deg_ = this->get_parameter("horizontal_fov").as_double();
+        vertical_fov_deg_ = this->get_parameter("vertical_fov").as_double();
+        fire_tempture_threshold_ = this->get_parameter("fire_tempture_threshold").as_double();
 
-        RCLCPP_INFO(this->get_logger(), "相机间距: %.4f 米", camera_distance_);
+        RCLCPP_INFO(this->get_logger(), "相机间距: %.4f 米 火源温度阈值：%0.4f", camera_distance_,fire_tempture_threshold_);
 
         // 初始化SDK
         NET_DVR_Init();
@@ -251,69 +255,71 @@ private:
 
             if (temp_diff <= 5.0)
             {
-                // 温差在合理范围内，计算3D坐标
-                calculate_3d_fire_position(msg.left_center_x, msg.left_center_y,
-                                           msg.right_center_x, msg.right_center_y,
-                                           msg.fire_position);
-
-                // 发布消息
-                pub_->publish(msg);
+                if (calculate_3d_fire_position(msg.left_center_x, msg.left_center_y,
+                                               msg.right_center_x, msg.right_center_y,
+                                               msg.fire_position) == 0)
+                {
+                    RCLCPP_INFO(this->get_logger(),
+                                "3D火焰位置计算成功: (%.3f, %.3f, %.3f) 米",
+                                msg.fire_position.x, msg.fire_position.y, msg.fire_position.z);
+                    pub_->publish(msg);
+                }
             }
             else
             {
                 RCLCPP_WARN(this->get_logger(),
                             "左右相机温差过大 (%.1f°C > 5.0°C)，跳过3D计算", temp_diff);
-                msg.fire_position.x = 0.0;
-                msg.fire_position.y = 0.0;
-                msg.fire_position.z = 0.0;
-                pub_->publish(msg);
+                // msg.fire_position.x = 0.0;
+                // msg.fire_position.y = 0.0;
+                // msg.fire_position.z = 0.0;
+                // pub_->publish(msg);
             }
         }
-        else if (left_valid)
-        {
-            RCLCPP_INFO(this->get_logger(), "仅左相机检测到火焰: (%.3f,%.3f) %.1f°C",
-                        msg.left_center_x, msg.left_center_y, msg.left_max);
-            // 清零右相机和3D位置数据
-            msg.right_max = 0.0;
-            msg.right_avg = 0.0;
-            msg.right_center_x = 0.0;
-            msg.right_center_y = 0.0;
-            msg.fire_position.x = 0.0;
-            msg.fire_position.y = 0.0;
-            msg.fire_position.z = 0.0;
-            pub_->publish(msg);
-        }
-        else if (right_valid)
-        {
-            RCLCPP_INFO(this->get_logger(), "仅右相机检测到火焰: (%.3f,%.3f) %.1f°C",
-                        msg.right_center_x, msg.right_center_y, msg.right_max);
-            // 清零左相机和3D位置数据
-            msg.left_max = 0.0;
-            msg.left_avg = 0.0;
-            msg.left_center_x = 0.0;
-            msg.left_center_y = 0.0;
-            msg.fire_position.x = 0.0;
-            msg.fire_position.y = 0.0;
-            msg.fire_position.z = 0.0;
-            pub_->publish(msg);
-        }
-        else
-        {
-            RCLCPP_DEBUG(this->get_logger(), "未检测到火焰");
-            // 清零所有数据
-            msg.left_max = 0.0;
-            msg.left_avg = 0.0;
-            msg.left_center_x = 0.0;
-            msg.left_center_y = 0.0;
-            msg.right_max = 0.0;
-            msg.right_avg = 0.0;
-            msg.right_center_x = 0.0;
-            msg.right_center_y = 0.0;
-            msg.fire_position.x = 0.0;
-            msg.fire_position.y = 0.0;
-            msg.fire_position.z = 0.0;
-            pub_->publish(msg);
-        }
+        // else if (left_valid)
+        // {
+        //     RCLCPP_INFO(this->get_logger(), "仅左相机检测到火焰: (%.3f,%.3f) %.1f°C",
+        //                 msg.left_center_x, msg.left_center_y, msg.left_max);
+        //     // 清零右相机和3D位置数据
+        //     msg.right_max = 0.0;
+        //     msg.right_avg = 0.0;
+        //     msg.right_center_x = 0.0;
+        //     msg.right_center_y = 0.0;
+        //     msg.fire_position.x = 0.0;
+        //     msg.fire_position.y = 0.0;
+        //     msg.fire_position.z = 0.0;
+        //     pub_->publish(msg);
+        // }
+        // else if (right_valid)
+        // {
+        //     RCLCPP_INFO(this->get_logger(), "仅右相机检测到火焰: (%.3f,%.3f) %.1f°C",
+        //                 msg.right_center_x, msg.right_center_y, msg.right_max);
+        //     // 清零左相机和3D位置数据
+        //     msg.left_max = 0.0;
+        //     msg.left_avg = 0.0;
+        //     msg.left_center_x = 0.0;
+        //     msg.left_center_y = 0.0;
+        //     msg.fire_position.x = 0.0;
+        //     msg.fire_position.y = 0.0;
+        //     msg.fire_position.z = 0.0;
+        //     pub_->publish(msg);
+        // }
+        // else
+        // {
+        //     RCLCPP_DEBUG(this->get_logger(), "未检测到火焰");
+        //     // 清零所有数据
+        //     msg.left_max = 0.0;
+        //     msg.left_avg = 0.0;
+        //     msg.left_center_x = 0.0;
+        //     msg.left_center_y = 0.0;
+        //     msg.right_max = 0.0;
+        //     msg.right_avg = 0.0;
+        //     msg.right_center_x = 0.0;
+        //     msg.right_center_y = 0.0;
+        //     msg.fire_position.x = 0.0;
+        //     msg.fire_position.y = 0.0;
+        //     msg.fire_position.z = 0.0;
+        //     pub_->publish(msg);
+        // }
     }
 
     bool get_fire_info_from_camera(int userID, float &max_temp, float &avg_temp,
@@ -340,6 +346,12 @@ private:
 
         // 提取温度和坐标信息
         max_temp = struOutBuffer.fMaxTemperature;
+        if(max_temp<=fire_tempture_threshold_)
+        {
+            RCLCPP_DEBUG(this->get_logger(), "%s火源温度 %.2f°C 低于阈值 %.2f°C，跳过",
+                         camera_name.c_str(), max_temp, fire_tempture_threshold_);
+            return false;
+        }
         avg_temp = struOutBuffer.fAverageTemperature; // 如果SDK支持的话
         center_x = struOutBuffer.struHighestPoint.fX;
         center_y = struOutBuffer.struHighestPoint.fY;
@@ -347,16 +359,13 @@ private:
         return true;
     }
 
-    void calculate_3d_fire_position(float left_x_ratio, float left_y_ratio,
-                                    float right_x_ratio, float right_y_ratio,
-                                    geometry_msgs::msg::Point &fire_position)
+    int calculate_3d_fire_position(float left_x_ratio, float left_y_ratio,
+                                   float right_x_ratio, float right_y_ratio,
+                                   geometry_msgs::msg::Point &fire_position)
     {
+        static double last_distance;
         try
         {
-            // 获取相机参数
-            double horizontal_fov_deg = this->get_parameter("horizontal_fov").as_double();
-            double vertical_fov_deg = this->get_parameter("vertical_fov").as_double();
-
             // 输出输入参数用于调试
             RCLCPP_INFO(this->get_logger(),
                         "输入坐标 - 左相机: (%.3f, %.3f), 右相机: (%.3f, %.3f)",
@@ -364,11 +373,11 @@ private:
 
             // 直接从比例坐标计算角度
             // 比例坐标0.0对应-FOV/2，0.5对应0度，1.0对应+FOV/2
-            double left_azimuth_deg = (left_x_ratio - 0.5) * horizontal_fov_deg;
-            double left_elevation_deg = (0.5 - left_y_ratio) * vertical_fov_deg;
+            double left_azimuth_deg = (left_x_ratio - 0.5) * this->horizontal_fov_deg_;
+            double left_elevation_deg = (0.5 - left_y_ratio) * this->vertical_fov_deg_;
 
-            double right_azimuth_deg = (right_x_ratio - 0.5) * horizontal_fov_deg;
-            double right_elevation_deg = (0.5 - right_y_ratio) * vertical_fov_deg;
+            double right_azimuth_deg = (right_x_ratio - 0.5) * this->horizontal_fov_deg_;
+            double right_elevation_deg = (0.5 - right_y_ratio) * this->vertical_fov_deg_;
 
             RCLCPP_INFO(this->get_logger(),
                         "左相机角度: 方位角=%.2f°, 俯仰角=%.2f°",
@@ -378,10 +387,10 @@ private:
                         right_azimuth_deg, right_elevation_deg);
 
             // 检查角度是否合理
-            if (std::abs(left_azimuth_deg) > horizontal_fov_deg / 2 ||
-                std::abs(right_azimuth_deg) > horizontal_fov_deg / 2 ||
-                std::abs(left_elevation_deg) > vertical_fov_deg / 2 ||
-                std::abs(right_elevation_deg) > vertical_fov_deg / 2)
+            if (std::abs(left_azimuth_deg) > this->horizontal_fov_deg_ / 2 ||
+                std::abs(right_azimuth_deg) > this->horizontal_fov_deg_ / 2 ||
+                std::abs(left_elevation_deg) > this->vertical_fov_deg_ / 2 ||
+                std::abs(right_elevation_deg) > this->vertical_fov_deg_ / 2)
             {
                 RCLCPP_WARN(this->get_logger(), "计算角度超出FOV范围，可能输入数据有误");
             }
@@ -395,14 +404,14 @@ private:
                         "视差角: %.3f度 (%.3f弧度), 基线距离: %.4f米",
                         angle_diff_deg, angle_diff_rad, baseline);
 
-            // if (std::abs(angle_diff_rad) < 0.01)
-            // { // 角度差太小（约0.57度）
-            //     RCLCPP_WARN(this->get_logger(), "视差角太小，无法准确计算深度");
-            //     fire_position.x = 0.0;
-            //     fire_position.y = 0.0;
-            //     fire_position.z = 10.0; // 默认10米
-            //     return;
-            // }
+            if (std::abs(angle_diff_rad) < 0.01)
+            { // 角度差太小（约0.57度）
+                RCLCPP_WARN(this->get_logger(), "视差角太小，无法准确计算深度");
+                fire_position.x = 0.0;
+                fire_position.y = 0.0;
+                fire_position.z = 10.0; // 默认10米
+                return 0;
+            }
 
             // 使用简单三角测量计算距离
             // 对于小角度：distance ≈ baseline / angle_diff_rad
@@ -414,9 +423,24 @@ private:
             }
             else
             { // 大角度精确计算
-                distance = baseline / (2.0 * tan(std::abs(angle_diff_rad) / 2.0));
+                distance = baseline / 2.0 / tan(std::abs(angle_diff_rad) / 2.0);
             }
+            if(last_distance == 0)
+            {
+                last_distance = distance;
+            }
+            if(last_distance>1 && std::abs(distance - last_distance) > 1.0)
+            {
+                RCLCPP_WARN(this->get_logger(), "距离变化过大，跳过本次测量");
+                return -1;
+            }
+            last_distance = distance;
 
+            if(distance<0.1)
+            {
+                RCLCPP_WARN(this->get_logger(), "计算得到的距离过小，跳过本次测量");
+                return -1;
+            }
             // 使用平均角度计算方向
             double avg_azimuth_deg = (left_azimuth_deg + right_azimuth_deg) / 2.0;
             double avg_elevation_deg = (left_elevation_deg + right_elevation_deg) / 2.0;
@@ -425,18 +449,19 @@ private:
 
             // 计算原始3D坐标（修正坐标系）
             geometry_msgs::msg::Point raw_position;
-            
+
             // 修正坐标轴映射：
-            // 原来: x=左右, y=上下, z=前后
             // 修正: x=前后, y=左右, z=上下
-            raw_position.x = distance * cos(avg_azimuth_rad) * cos(avg_elevation_rad);  // 前方距离
-            raw_position.y = distance * sin(avg_azimuth_rad) * cos(avg_elevation_rad);  // 左右偏移
-            raw_position.z = distance * sin(avg_elevation_rad);                         // 上下偏移
+            raw_position.x = distance * cos(avg_azimuth_rad) * cos(avg_elevation_rad); // 前方距离
+            raw_position.y = distance * sin(avg_azimuth_rad) * cos(avg_elevation_rad); // 左右偏移
+            raw_position.z = distance * sin(avg_elevation_rad);                        // 上下偏移
 
             RCLCPP_INFO(this->get_logger(),
                         "distance:%lf 修正后3D位置: (%.3f, %.3f, %.3f) 米 [x=前后, y=左右, z=上下]",
                         distance, raw_position.x, raw_position.y, raw_position.z);
-
+            fire_position.x = raw_position.x;
+            fire_position.y = raw_position.y;
+            fire_position.z = raw_position.z;
             // 异常值检测
             // if (!position_filter_.position_buffer_.empty())
             // {
@@ -468,14 +493,12 @@ private:
             geometry_msgs::msg::Point world_position;
             if (transform_to_world_frame(raw_position, world_position))
             {
-                fire_position = world_position;
-
-                RCLCPP_INFO(this->get_logger(),
-                            "世界坐标系火源位置: (%.3f, %.3f, %.3f) 米 ",
-                            fire_position.x, fire_position.y, fire_position.z);
+                // RCLCPP_INFO(this->get_logger(),
+                //             "世界坐标系火源位置: (%.3f, %.3f, %.3f) 米 ",
+                //             fire_position.x, fire_position.y, fire_position.z);
 
                 // 发布火焰位置的TF变换
-                publish_fire_tf(fire_position);
+                publish_fire_tf(world_position);
             }
             else
             {
@@ -484,15 +507,14 @@ private:
                 RCLCPP_WARN(this->get_logger(), "TF转换失败，使用相机坐标系结果");
 
                 // 也可以发布相机坐标系的火焰位置
-                publish_fire_tf_camera_frame(fire_position);
+                // publish_fire_tf_camera_frame(fire_position);
             }
+            return 0;
         }
         catch (const std::exception &e)
         {
             RCLCPP_ERROR(this->get_logger(), "计算3D位置时发生错误: %s", e.what());
-            fire_position.x = 0.0;
-            fire_position.y = 0.0;
-            fire_position.z = 1.0;
+            return -1;
         }
     }
     bool transform_to_world_frame(const geometry_msgs::msg::Point &camera_position,
@@ -625,6 +647,9 @@ private:
     int lUserID_Left_ = -1;  // 左相机用户ID
     int lUserID_Right_ = -1; // 右相机用户ID
     double camera_distance_; // 相机间距
+    double horizontal_fov_deg_;
+    double vertical_fov_deg_;
+    double fire_tempture_threshold_;
 
     // TF相关
     std::unique_ptr<tf2_ros::Buffer> tf_buffer_;

@@ -8,14 +8,17 @@
     fire_info_timer_period_ms: 200
     enable_color: true      # 新增：启用彩色图像发布
     enable_ir: true         # 新增：启用红外图像发布
+    fire_tempture_threshold: 40.0  # 新增：火焰温度阈值（摄氏度）
 
         # 相机标定参数
     camera_distance: 0.2     # 相机间距（米）
     principal_point_x: 0.5      # 主点x（比例，0.5表示图像中心）
     principal_point_y: 0.5      # 主点y（比例）
+    horizontal_fov: 50.0   # 水平视场角（度）
+    vertical_fov: 37.2     # 垂直视场角（度）
     
-    # TF frame配置
     left_camera_frame: "left_hk_camera_optical_frame"
+    # TF frame配置
     right_camera_frame: "right_hk_camera_optical_frame"
     stereo_camera_frame: "stereo_ir_camera"     # 双相机系统frame
     world_frame: "base_link"
@@ -24,10 +27,10 @@
     publish_fire_tf: true            # 是否发布火焰位置TF
 
     # 滤波参数
-    kalman_process_noise: 0.01      # 增大过程噪声
-    kalman_measurement_noise: 0.1   # 增大测量噪声
-    moving_average_window: 5        # 减小窗口大小
-    outlier_threshold: 1.0          # 增大异常值阈值到1米
+    # kalman_process_noise: 0.01      # 增大过程噪声
+    # kalman_measurement_noise: 0.1   # 增大测量噪声
+    # moving_average_window: 5        # 减小窗口大小
+    # outlier_threshold: 1.0          # 增大异常值阈值到1米
 
     rtsp_port: 554
     color_stream_path: "/Streaming/Channels/1"  # 彩色码流
