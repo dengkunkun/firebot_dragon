@@ -11,6 +11,7 @@ from std_srvs.srv import Trigger
 from nav_msgs.msg import Odometry
 from ros_robot_controller_msgs.msg import MotorsState
 from geometry_msgs.msg import Pose2D, Pose, Twist, PoseWithCovarianceStamped, TransformStamped
+from rclpy.parameter_event_handler import ParameterEventHandler
 
 ODOM_POSE_COVARIANCE = list(map(float, 
                         [1e-3, 0, 0, 0, 0, 0, 
@@ -222,6 +223,14 @@ class Controller(Node):
         self.linear_max_y = self.get_parameter('linear_max_y').value
         self.angular_max_z = self.get_parameter('angular_max_z').value
         
+        self.handler = ParameterEventHandler(self)
+
+        self.callback_handle = self.handler.add_parameter_callback(
+            parameter_name="angular_max_z",
+            node_name="motion_jetson",
+            callback=self.angular_max_z_change_callback,
+        )
+        
         self.open_loop = self.get_parameter('open_loop').value
         self.get_logger().info(f'\033[1;32m{self.open_loop}\033[0m')
 
@@ -260,6 +269,12 @@ class Controller(Node):
         self.create_service(Trigger, '~/init_finish', self.get_node_state)
         self.get_logger().info('\033[1;32m%s\033[0m' % 'start')
 
+    def angular_max_z_change_callback(self, p: rclpy.parameter.Parameter) -> None:
+        self.get_logger().warn(f"Received an update to parameter: {p.name}: {rclpy.parameter.parameter_value_to_python(p.value)}")
+        # self.get_logger().warn(f'p:{p}') # p:rcl_interfaces.msg.Parameter
+        self.angular_max_z=self.get_parameter('angular_max_z').value
+        self.get_logger().warn(f"Updated angular_max_z: {self.angular_max_z}")
+    
     def get_node_state(self, request, response):
         response.success = True
         return response

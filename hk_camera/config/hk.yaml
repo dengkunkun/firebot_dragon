@@ -8,7 +8,7 @@
     fire_info_timer_period_ms: 200
     enable_color: true      # 新增：启用彩色图像发布
     enable_ir: true         # 新增：启用红外图像发布
-    fire_tempture_threshold: 40.0  # 新增：火焰温度阈值（摄氏度）
+    fire_tempture_threshold: 45.0  # 新增：火焰温度阈值（摄氏度）
 
         # 相机标定参数
     camera_distance: 0.2     # 相机间距（米）
@@ -21,7 +21,7 @@
     # TF frame配置
     right_camera_frame: "right_hk_camera_optical_frame"
     stereo_camera_frame: "stereo_ir_camera"     # 双相机系统frame
-    world_frame: "base_link"
+    world_frame: "map"
 
     fire_frame_id: "fire_position"   # 火焰位置的frame名称
     publish_fire_tf: true            # 是否发布火焰位置TF

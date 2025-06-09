@@ -9,6 +9,7 @@
 #include <geometry_msgs/msg/point_stamped.hpp>
 #include "HCNetSDK.h"
 #include <cmath>
+#include <ctime>
 #include <deque>
 #include <numeric>
 
@@ -32,11 +33,11 @@ public:
         this->declare_parameter<bool>("enable_ir", true);
 
         // 相机参数 - 使用FOV角度而不是像素焦距
-        this->declare_parameter<double>("horizontal_fov", 50.0);   // 水平FOV角度
-        this->declare_parameter<double>("vertical_fov", 37.2);     // 垂直FOV角度
+        this->declare_parameter<double>("horizontal_fov", 50.0);          // 水平FOV角度
+        this->declare_parameter<double>("vertical_fov", 37.2);            // 垂直FOV角度
         this->declare_parameter<double>("fire_tempture_threshold", 50.0); // 火源温度阈值（摄氏度）
-        this->declare_parameter<double>("principal_point_x", 0.5); // 主点x（比例）
-        this->declare_parameter<double>("principal_point_y", 0.5); // 主点y（比例）
+        this->declare_parameter<double>("principal_point_x", 0.5);        // 主点x（比例）
+        this->declare_parameter<double>("principal_point_y", 0.5);        // 主点y（比例）
 
         // TF frame名称
         this->declare_parameter<std::string>("left_camera_frame", "left_hk_camera_optical_frame");
@@ -108,7 +109,7 @@ public:
         vertical_fov_deg_ = this->get_parameter("vertical_fov").as_double();
         fire_tempture_threshold_ = this->get_parameter("fire_tempture_threshold").as_double();
 
-        RCLCPP_INFO(this->get_logger(), "相机间距: %.4f 米 火源温度阈值：%0.4f", camera_distance_,fire_tempture_threshold_);
+        RCLCPP_INFO(this->get_logger(), "相机间距: %.4f 米 火源温度阈值：%0.4f", camera_distance_, fire_tempture_threshold_);
 
         // 初始化SDK
         NET_DVR_Init();
@@ -257,11 +258,8 @@ private:
             {
                 if (calculate_3d_fire_position(msg.left_center_x, msg.left_center_y,
                                                msg.right_center_x, msg.right_center_y,
-                                               msg.fire_position) == 0)
+                                               msg.fire_position, msg.fire_position_map) == 0)
                 {
-                    RCLCPP_INFO(this->get_logger(),
-                                "3D火焰位置计算成功: (%.3f, %.3f, %.3f) 米",
-                                msg.fire_position.x, msg.fire_position.y, msg.fire_position.z);
                     pub_->publish(msg);
                 }
             }
@@ -346,7 +344,7 @@ private:
 
         // 提取温度和坐标信息
         max_temp = struOutBuffer.fMaxTemperature;
-        if(max_temp<=fire_tempture_threshold_)
+        if (max_temp <= fire_tempture_threshold_)
         {
             RCLCPP_DEBUG(this->get_logger(), "%s火源温度 %.2f°C 低于阈值 %.2f°C，跳过",
                          camera_name.c_str(), max_temp, fire_tempture_threshold_);
@@ -361,9 +359,11 @@ private:
 
     int calculate_3d_fire_position(float left_x_ratio, float left_y_ratio,
                                    float right_x_ratio, float right_y_ratio,
-                                   geometry_msgs::msg::Point &fire_position)
+                                   geometry_msgs::msg::Point &fire_position,
+                                   geometry_msgs::msg::Point &fire_position_map)
     {
         static double last_distance;
+        static time_t last_time = 0;
         try
         {
             // 输出输入参数用于调试
@@ -425,22 +425,24 @@ private:
             { // 大角度精确计算
                 distance = baseline / 2.0 / tan(std::abs(angle_diff_rad) / 2.0);
             }
-            if(last_distance == 0)
+            if (last_distance == 0)
             {
                 last_distance = distance;
             }
-            if(last_distance>1 && std::abs(distance - last_distance) > 1.0)
+            if (last_distance > 1 && std::abs(distance - last_distance) > 1.0 && time(NULL) - last_time < 2)
             {
                 RCLCPP_WARN(this->get_logger(), "距离变化过大，跳过本次测量");
                 return -1;
             }
-            last_distance = distance;
-
-            if(distance<0.1)
+            if (distance < 0.1)
             {
                 RCLCPP_WARN(this->get_logger(), "计算得到的距离过小，跳过本次测量");
                 return -1;
             }
+
+            last_distance = distance;
+            last_time = time(NULL);
+
             // 使用平均角度计算方向
             double avg_azimuth_deg = (left_azimuth_deg + right_azimuth_deg) / 2.0;
             double avg_elevation_deg = (left_elevation_deg + right_elevation_deg) / 2.0;
@@ -452,9 +454,9 @@ private:
 
             // 修正坐标轴映射：
             // 修正: x=前后, y=左右, z=上下
-            raw_position.x = distance * cos(avg_azimuth_rad) * cos(avg_elevation_rad); // 前方距离
-            raw_position.y = distance * sin(avg_azimuth_rad) * cos(avg_elevation_rad); // 左右偏移
-            raw_position.z = distance * sin(avg_elevation_rad);                        // 上下偏移
+            raw_position.x = distance * cos(avg_azimuth_rad) * cos(avg_elevation_rad);  // 前方为正
+            raw_position.y = -distance * sin(avg_azimuth_rad) * cos(avg_elevation_rad); // 左右偏移 左边为正
+            raw_position.z = distance * sin(avg_elevation_rad);                         // 上下偏移 上方为正
 
             RCLCPP_INFO(this->get_logger(),
                         "distance:%lf 修正后3D位置: (%.3f, %.3f, %.3f) 米 [x=前后, y=左右, z=上下]",
@@ -493,12 +495,9 @@ private:
             geometry_msgs::msg::Point world_position;
             if (transform_to_world_frame(raw_position, world_position))
             {
-                // RCLCPP_INFO(this->get_logger(),
-                //             "世界坐标系火源位置: (%.3f, %.3f, %.3f) 米 ",
-                //             fire_position.x, fire_position.y, fire_position.z);
-
                 // 发布火焰位置的TF变换
                 publish_fire_tf(world_position);
+                fire_position_map = world_position;
             }
             else
             {
@@ -532,7 +531,8 @@ private:
             // 创建在相机坐标系中的点
             geometry_msgs::msg::PointStamped camera_point;
             camera_point.header.frame_id = camera_frame;
-            camera_point.header.stamp = this->now();
+            // camera_point.header.stamp = this->now();
+            camera_point.header.stamp= rclcpp::Time(0, 0); // 使用0时间戳
             camera_point.point = camera_position;
 
             // 转换到世界坐标系
@@ -586,7 +586,7 @@ private:
             // 发布TF变换
             tf_broadcaster_->sendTransform(fire_transform);
 
-            RCLCPP_DEBUG(this->get_logger(),
+            RCLCPP_INFO(this->get_logger(),
                          "发布火焰位置TF: %s -> %s (%.3f, %.3f, %.3f)",
                          world_frame.c_str(), fire_frame.c_str(),
                          fire_position.x, fire_position.y, fire_position.z);

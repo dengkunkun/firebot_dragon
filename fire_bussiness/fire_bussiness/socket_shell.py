@@ -57,7 +57,7 @@ class TCPSocketServer:
                         if response_str:
                             conn.sendall(response_str.encode('utf-8'))
                         else:
-                            conn.sendall('None'.encode('utf-8')) # Send empty response if handler returns None
+                            conn.sendall('None\n'.encode('utf-8')) # Send empty response if handler returns None
             except socket.timeout: # Should not happen here if timeout is None
                 self.logger.warn("Socket operation timed out unexpectedly on active connection.")
                 continue

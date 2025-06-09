@@ -2,7 +2,8 @@
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped, Twist
 from nav_msgs.msg import Odometry
 from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
-import rclpy
+import rclpy, tf2_ros
+import tf2_geometry_msgs
 
 # from rclpy.duration import Duration
 from builtin_interfaces.msg import Duration
@@ -26,11 +27,8 @@ from .socket_shell import TCPSocketServer  # Import the new class
 
 from fire_interfaces.msg import FireInfo
 from action_msgs.msg import GoalStatus
-import socket
-import threading
-import os  # For socket cleanup
 
-
+'''
 class FireCaculate:
     """
     一个容器用来存储odom、火源坐标、火源温度
@@ -129,6 +127,7 @@ class FireCaculate:
             return 0.0
 
         return 0.0
+'''
 
 
 class NavigationNode(Node):
@@ -146,6 +145,9 @@ class NavigationNode(Node):
         self.navigator = BasicNavigator()
         self.goal_active = False
         self._action_goal_handle = None
+
+        self.tf_buffer = tf2_ros.Buffer()
+        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
 
         self.tcp_server_host = "0.0.0.0"  # Listen on all interfaces
         self.tcp_server_port = 12345  # Choose a port
@@ -292,6 +294,83 @@ class NavigationNode(Node):
 
         self.current_yaw = yaw
 
+    def get_robot_pose_in_map(self):
+        # 构造 odom 下的 PoseStamped
+        odom_pose = PoseStamped()
+        odom_pose.header.frame_id = "odom"
+        # odom_pose.header.stamp = self.current_odom.header.stamp
+        odom_pose.header.stamp = rclpy.time.Time(seconds=0)
+        odom_pose.pose = self.current_odom.pose.pose
+
+        try:
+            # 转换到 map 坐标系
+            map_pose = self.tf_buffer.transform(
+                odom_pose, "map", timeout=rclpy.duration.Duration(seconds=0.5)
+            )
+            return map_pose.pose.position
+        except Exception as e:
+            self.logger.error(f"TF transform odom->map failed: {e}")
+            return None
+
+    def get_extinguishment_pose(self):
+        """
+        计算以当前机器人朝向为准，火源前0.8m的位置
+        """
+        if self.current_odom is None or self.fire_info is None:
+            self.logger.error("No odom or fire info available.")
+            return None
+
+        # 1. 获取机器人和火源在map下的坐标
+        robot_pos = self.get_robot_pose_in_map()
+        fire_pos = self.fire_info.fire_position_map
+        if robot_pos is None or fire_pos is None:
+            self.logger.error("No valid robot or fire position in map frame.")
+            return None
+        self.logger.info(
+            f"Robot position: ({robot_pos.x:.2f}, {robot_pos.y:.2f}), "
+            f"Fire position: ({fire_pos.x:.2f}, {fire_pos.y:.2f})"
+        )
+        # 2. 计算机器人到火源的方向向量
+        dx = fire_pos.x - robot_pos.x
+        dy = fire_pos.y - robot_pos.y
+        dist = math.hypot(dx, dy)
+        if dist < 0.5:
+            self.logger.error("Robot and fire are at the same position!")
+            return None
+
+        # 3. 单位化方向向量
+        ux = dx / dist
+        uy = dy / dist
+
+        # 4. 计算目标点（火源前0.8m，沿机器人->火源方向，离火源0.8m）
+        extinguish_x = fire_pos.x - ux * 0.8
+        extinguish_y = fire_pos.y - uy * 0.8
+
+        # 5. 目标点朝向（面向火源）
+        yaw = math.atan2(dy, dx)
+        qz = math.sin(yaw / 2.0)
+        qw = math.cos(yaw / 2.0)
+        self.logger.info(
+            f"Extinguishment position: ({extinguish_x:.2f}, {extinguish_y:.2f}), "
+            f"Yaw: {math.degrees(yaw):.1f}°"
+        )
+        # 6. 构造PoseStamped
+        pose = PoseStamped()
+        pose.header.stamp = self.get_clock().now().to_msg()
+        pose.header.frame_id = "map"
+        pose.pose.position.x = extinguish_x
+        pose.pose.position.y = extinguish_y
+        pose.pose.position.z = 0.0
+        pose.pose.orientation.x = 0.0
+        pose.pose.orientation.y = 0.0
+        pose.pose.orientation.z = qz
+        pose.pose.orientation.w = qw
+
+        self.logger.info(
+            f"Extinguishment pose: ({extinguish_x:.2f}, {extinguish_y:.2f}), yaw: {math.degrees(yaw):.1f}°"
+        )
+        return pose
+
     def _feedbackCallback(self, msg):
         self.logger.info(f"Received action feedback message {msg}")
         self.feedback = msg.feedback
@@ -344,56 +423,50 @@ class NavigationNode(Node):
         result = FireExtinguishing.Result()
         feedback_msg = FireExtinguishing.Feedback()
         request = goal_handle.request  # fire_interfaces.action.FireExtinguishing_Goal
+
         # self.logger.info(f"Received FireExtinguishing request: {request}")
+        def set_result(success: bool, message: str):
+            nonlocal result
+            nonlocal goal_handle
+            self.logger.info(f"Setting result: success={success}, message='{message}'")
+            result.success = success
+            result.message = message
+            if success:
+                goal_handle.succeed()
+            else:
+                goal_handle.abort()
+            self._action_goal_handle = None
+
         target_pose = request.target_pose
-        fire_detect_result = self.nav2pose_with_fire_detection(target_pose)
+        fire_detect_result = self.nav2pose_with_fire_detection(target_pose, True)
 
-        if fire_detect_result == self.FireDetectState.FireDetected:
-            self.rotate_detect_fire()
-            self.nav2extinguishment_pose()
-            self.logger.info("Fire detected during navigation, stopping navigation.")
-            result.success = True
-            result.message = "Fire detected during navigation."
-            goal_handle.succeed()
-            self._action_goal_handle = None
-            return result
-        elif fire_detect_result == self.FireDetectState.FireDetectionError:
-            self.logger.error("Error during fire detection while navigating.")
-            result.success = False
-            result.message = "Error during fire detection while navigating."
-            goal_handle.abort()
-            self._action_goal_handle = None
+        if fire_detect_result == self.FireDetectState.FireDetectionError:
+            set_result(False, "Error during fire detection while navigating.")
             return result
 
-        fire_detect_result = self.rotate_detect_fire()
-        if fire_detect_result == self.FireDetectState.FireDetected:
-            self.nav2extinguishment_pose()
-            self.logger.info("Fire detected during rotation, stopping rotation.")
-            result.success = True
-            result.message = "Fire detected during rotation."
-            goal_handle.succeed()
-            self._action_goal_handle = None
-            return result
-        elif fire_detect_result == self.FireDetectState.FireDetectionError:
-            self.logger.error("Error during fire detection while rotating.")
-            result.success = False
-            result.message = "Error during fire detection while rotating."
-            goal_handle.abort()
-            self._action_goal_handle = None
-            return result
+        if not self.is_fire_detected():
+            fire_detect_result = self.rotate_detect_fire(0.3)
+            if fire_detect_result == self.FireDetectState.FireDetectionError:
+                set_result(False, "Error during fire detection while rotating.")
+                return result
 
+        if self.fire_info.fire_position.x > 1.0:
+            pose = self.get_extinguishment_pose()
+            if pose is None:
+                set_result(False, "Failed to get extinguishment pose.")
+                return result
+            send_goal_future = self.nav2pose_async(pose)
+            rclpy.spin_until_future_complete(self, send_goal_future)
         # feedback_msg.current_state = FireExtinguishing.Feedback.STATE_SCANNING
         # feedback_msg.current_pose.pose = self.current_odom.pose.pose
         # feedback_msg.current_pose.header.stamp = self.current_odom.header.stamp
         # goal_handle.publish_feedback(feedback_msg)
-        
-        self.logger.info("Fire not detected")
-        result.success = True
-        result.message = "Fire not detected"
-        goal_handle.succeed()
-        self._action_goal_handle = None
+        if self.fire_info.fire_position.y > 0.2:
+            fire_detect_result = self.rotate_detect_fire(0.1)
+
+        set_result(True, "Fire extinguishing completed successfully.")
         return result
-        
+
     def cancel_fire_extinguishing_callback(self, goal_handle):
         self.logger.info("Received request to cancel RotateSearch goal.")
         if not self.navigator.isTaskComplete():
@@ -401,11 +474,10 @@ class NavigationNode(Node):
         self.navigator.cancelTask()
         return CancelResponse.ACCEPT
 
-    def rotate_detect_fire(self) -> FireDetectState:
+    def rotate_detect_fire(self, rotate_speed: float) -> FireDetectState:
         """
         旋转搜索火源，阻塞等待结果
         """
-        rotate_speed = 0.05  # Default rotation speed
         self.motion_params_angular_max_z(rotate_speed)
         motion_params = self.motion_params_angular_max_z()
         if motion_params != rotate_speed:
@@ -420,7 +492,7 @@ class NavigationNode(Node):
             target_yaw = math.radians(360.0)
         else:
             target_yaw = math.atan(
-                -self.fire_info.fire_position.y / self.fire_info.fire_position.x
+                self.fire_info.fire_position.y / self.fire_info.fire_position.x
             )
         send_goal_future = self.spin_async(target_yaw)
         while True:
@@ -444,14 +516,8 @@ class NavigationNode(Node):
         while rclpy.ok():
             if self.is_fire_detected():
                 self.logger.info("Fire detected, stopping rotation.")
-                self.logger.info(f'Fire position: {self.fire_info.fire_position}')
+                self.logger.info(f"Fire position: {self.fire_info.fire_position}")
                 goal_result.cancel_goal_async()
-                target_yaw = math.atan(
-                    -self.fire_info.fire_position.y / self.fire_info.fire_position.x
-                )
-                if abs(target_yaw) > 0.05:
-                    send_goal_future = self.spin_async(target_yaw)
-                    rclpy.spin_until_future_complete(self, send_goal_future)
                 return self.FireDetectState.FireDetected
             rclpy.spin_until_future_complete(self, result_future, timeout_sec=0.1)
             if result_future.done():
@@ -464,10 +530,17 @@ class NavigationNode(Node):
                     return self.FireDetectState.FireDetectionError
             self.logger.info("Waiting for rotate to complete...")
 
-    def nav2pose_with_fire_detection(self, target_pose: PoseStamped) -> FireDetectState:
+    def nav2pose_with_fire_detection(
+        self, target_pose: PoseStamped, stop_on_fire_detected: bool
+    ) -> FireDetectState:
         """
         移动到指定位置同时搜索火源中心，阻塞等待结果
         """
+        self.logger.info(
+            f"Navigating to pose: x={target_pose.pose.position.x}, "
+            f"y={target_pose.pose.position.y}, z={target_pose.pose.position.z}"
+        )
+        self.motion_params_angular_max_z(0.5)
         send_goal_future = self.nav2pose_async(target_pose)
         rclpy.spin_until_future_complete(self, send_goal_future)
 
@@ -483,7 +556,7 @@ class NavigationNode(Node):
                     self.logger.error("navigate was rejected!")
                     return False
                 result_future = goal_result.get_result_async()
-                self.logger.info("spin start.")
+                self.logger.info("navigate start.")
                 break
             self.logger.info("Waiting for goal accepted")
             self.logger.info(f"state:{send_goal_future._state}")
@@ -491,9 +564,9 @@ class NavigationNode(Node):
             rclpy.spin_until_future_complete(self, send_goal_future, timeout_sec=0.1)
 
         while rclpy.ok():
-            if self.is_fire_detected():
+            if stop_on_fire_detected and self.is_fire_detected():
                 self.logger.info("Fire detected, stopping navigation.")
-                self.logger.info(f'Fire position: {self.fire_info.fire_position}')
+                self.logger.info(f"Fire position: {self.fire_info.fire_position}")
                 goal_result.cancel_goal_async()
                 return self.FireDetectState.FireDetected
             rclpy.spin_until_future_complete(self, result_future, timeout_sec=0.1)
@@ -515,20 +588,50 @@ class NavigationNode(Node):
         通过nav2导航到火源前方，但是可能无法到达
         需要判断着火位置前方有没有障碍物，可以尝试通过pgm或local costmap地图判断
         """
-        if not self.is_fire_detected():
-            self.logger.error("No fire detected, cannot extinguish.")
-            self.rotate_detect_fire()
-        while self.fire_info.fire_position.x > 1.0:
-            goal_pose_msg = PoseStamped()
-            goal_pose_msg.pose = self.current_odom.pose.pose
-            goal_pose_msg.pose.position.x += self.fire_info.fire_position.x - 0.8
-            goal_pose_msg.header.stamp = self.navigator.get_clock().now().to_msg()
-            goal_pose_msg.header.frame_id = "map"
-            self.navigator.goToPose(goal_pose_msg)
-            if abs(self.fire_info.fire_position.y) > 0.1 or not self.is_fire_detected():
-                self.rotate_detect_fire()
-            self.logger.info(f'Fire position: {self.fire_info.fire_position}')
+        pose = PoseStamped()
+        pose.header.stamp = self.get_clock().now().to_msg()
+        pose.header.frame_id = "map"
+        pose.pose.position.x = 0.0
+        pose.pose.position.y = 0.0
+        pose.pose.position.z = 0.0
+        pose.pose.orientation.x = 0.0
+        pose.pose.orientation.y = 0.0
+        pose.pose.orientation.z = 0.0
+        pose.pose.orientation.w = 1.0
+        fire_detect_result = self.nav2pose_with_fire_detection(pose, True)
 
+        if fire_detect_result == self.FireDetectState.FireDetectionError:
+            self.logger.error("Error during fire detection while navigating.")
+            return
+        self.logger.info("Navigation to init pose completed.")
+        if not self.is_fire_detected():
+            fire_detect_result = self.rotate_detect_fire(0.3)
+            if fire_detect_result == self.FireDetectState.FireDetectionError:
+                self.logger.error("Error during fire detection while rotating.")
+                return
+        self.logger.info("Fire detected, proceeding to extinguishment pose.")
+        
+        while abs(self.fire_info.fire_position.x) > 1.0:
+            time.sleep(0.5)
+            pose = self.get_extinguishment_pose()
+            if pose is None:
+                self.logger.error("Failed to get extinguishment pose.")
+                return
+            fire_detect_result = self.nav2pose_with_fire_detection(pose, False)
+            if fire_detect_result == self.FireDetectState.FireDetectionError:
+                self.logger.error(
+                    "Error during fire detection while navigating to extinguishment pose."
+                )
+                return
+        self.logger.info("Moving towards extinguishment pose.")
+        while abs(self.fire_info.fire_position.y) > 0.2:
+            fire_detect_result = self.rotate_detect_fire(0.1)
+            if fire_detect_result == self.FireDetectState.FireDetectionError:
+                self.logger.error(
+                    "Error during fire detection while rotating to extinguishment pose."
+                )
+                return
+        self.logger.info(f"Extinguishment pose reached: {self.fire_info.fire_position}")
         # while self.fire_info.fire_position.x > 0.5:
         #     # Check if the robot is close enough to the fire
         #     if self.fire_info.fire_position.x < 0.5:
@@ -538,7 +641,7 @@ class NavigationNode(Node):
         #         break
 
         #     # Continue moving towards the fire
-        #     self.navigator.driveOnHeading(dist=0.1, speed=0.025, time_allowance=10)
+        #     self.navigator.driveOnHeading(dist=0.1, speed=0.2, time_allowance=10)
         #     time.sleep(1)
 
     def check_fire_extinguishing_timeout(self):
@@ -638,6 +741,7 @@ class NavigationNode(Node):
     def check_navigation_status(self):
         if not self.goal_active:
             return
+
     def print_fire_info(self):
         """
         Print the current fire information.
@@ -651,6 +755,7 @@ class NavigationNode(Node):
             f"{self.fire_info.fire_position.y}), "
             f"time: {self.fire_info.header.stamp.sec}.{self.fire_info.header.stamp.nanosec}"
         )
+
     def spin_async_cmd(self, radian: str):
         self.spin_async(float(radian))
 
