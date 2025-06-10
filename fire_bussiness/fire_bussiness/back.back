@@ -1,0 +1,101 @@
+
+'''
+class FireCaculate:
+    """
+    一个容器用来存储odom、火源坐标、火源温度
+    原计划用一个相机通过移动进行3角定位，现在不需要了
+    """
+
+    def __init__(self, logger, max_temperature=55.0):
+        self.logger = logger
+        self.container = []  # odom,FireInfo
+        self.max_temperature = max_temperature  # 最大温度阈值
+        # 可见光
+        self.color_hfov = math.radians(104.8)
+        self.color_vfov = math.radians(55.8)
+        # 热成像
+        self.ir_hfov = math.radians(50.0)
+        self.ir_vfov = math.radians(37.2)
+
+        # self.fire_detected = False
+        # self.detected_time = time.time()  # 记录检测到火源的时间
+        self.detected_distance = 0.0  # 火源距离机器人最近的距离
+
+    def add_fire_info(self, odom: Odometry, fire_info: FireInfo):
+        """
+        添加火源信息到容器中
+        :param odom: Odometry 消息
+        :param fire_info: FireInfo 消息
+        """
+        if fire_info.max <= self.max_temperature:
+            return
+        self.container.append((odom, fire_info))
+
+    def is_fire_now(self):
+        """
+        检查当前是否有火源
+        :return: 如果有火源返回True，否则返回False
+        """
+        if not self.container:
+            return False
+
+        # 检查容器中是否有火源温度超过最大温度阈值
+        for _, fire_info in self.container:
+            if fire_info.max > self.max_temperature:
+                return True
+        return False
+
+    def get_last_fire_info(self):
+        """
+        获取最后一次检测到的火源信息
+        :return: 最后一次检测到的火源信息 (Odometry, FireInfo)
+        """
+        if not self.container:
+            return None, None
+
+        return self.container[-1]
+
+    def cuculate_rotate_degrees(self, current_postion: Odometry):
+        """
+        计算旋转到目标火源位置需要的角度
+        :param target_fire_position: 目标火源位置
+        :return: 旋转到目标火源位置需要的角度（弧度）
+        """
+        if not self.container:
+            return 0.0
+
+        last_odom, fire_info = self.get_last_fire_info()
+        if last_odom is None:
+            return 0.0
+
+        # 获取当前机器人的朝向
+        orientation_q = last_odom.pose.pose.orientation
+        orientation_list = [
+            orientation_q.x,
+            orientation_q.y,
+            orientation_q.z,
+            orientation_q.w,
+        ]
+        (_, _, last_odom_yaw) = euler_from_quaternion(orientation_list)
+        current_q = current_postion.pose.pose.orientation
+        current_orientation_list = [current_q.x, current_q.y, current_q.z, current_q.w]
+        (_, _, current_yaw) = euler_from_quaternion(current_orientation_list)
+        # TODO 把相机的tf转换为odom的tf
+        fire_diff_yaw = (fire_info.center_x - 0.5) * self.ir_hfov
+        self.logger.info(
+            f"last_odom_yaw: {last_odom_yaw}, fire_diff_yaw: {fire_diff_yaw}, current_yaw: {current_yaw}"
+        )
+        delta_yaw = last_odom_yaw - fire_diff_yaw - current_yaw
+
+        return delta_yaw
+
+    def caculate_fire_distace(self):
+        """
+        计算火源距离机器人最近的距离
+        :return: 最近的火源距离
+        """
+        if not self.container:
+            return 0.0
+
+        return 0.0
+'''

@@ -23,111 +23,11 @@ import math
 from tf_transformations import euler_from_quaternion
 import time
 from .log import ColorLogger
+from .costmap import CostmapUtil
 from .socket_shell import TCPSocketServer  # Import the new class
 
 from fire_interfaces.msg import FireInfo
 from action_msgs.msg import GoalStatus
-
-'''
-class FireCaculate:
-    """
-    一个容器用来存储odom、火源坐标、火源温度
-    原计划用一个相机通过移动进行3角定位，现在不需要了
-    """
-
-    def __init__(self, logger, max_temperature=55.0):
-        self.logger = logger
-        self.container = []  # odom,FireInfo
-        self.max_temperature = max_temperature  # 最大温度阈值
-        # 可见光
-        self.color_hfov = math.radians(104.8)
-        self.color_vfov = math.radians(55.8)
-        # 热成像
-        self.ir_hfov = math.radians(50.0)
-        self.ir_vfov = math.radians(37.2)
-
-        # self.fire_detected = False
-        # self.detected_time = time.time()  # 记录检测到火源的时间
-        self.detected_distance = 0.0  # 火源距离机器人最近的距离
-
-    def add_fire_info(self, odom: Odometry, fire_info: FireInfo):
-        """
-        添加火源信息到容器中
-        :param odom: Odometry 消息
-        :param fire_info: FireInfo 消息
-        """
-        if fire_info.max <= self.max_temperature:
-            return
-        self.container.append((odom, fire_info))
-
-    def is_fire_now(self):
-        """
-        检查当前是否有火源
-        :return: 如果有火源返回True，否则返回False
-        """
-        if not self.container:
-            return False
-
-        # 检查容器中是否有火源温度超过最大温度阈值
-        for _, fire_info in self.container:
-            if fire_info.max > self.max_temperature:
-                return True
-        return False
-
-    def get_last_fire_info(self):
-        """
-        获取最后一次检测到的火源信息
-        :return: 最后一次检测到的火源信息 (Odometry, FireInfo)
-        """
-        if not self.container:
-            return None, None
-
-        return self.container[-1]
-
-    def cuculate_rotate_degrees(self, current_postion: Odometry):
-        """
-        计算旋转到目标火源位置需要的角度
-        :param target_fire_position: 目标火源位置
-        :return: 旋转到目标火源位置需要的角度（弧度）
-        """
-        if not self.container:
-            return 0.0
-
-        last_odom, fire_info = self.get_last_fire_info()
-        if last_odom is None:
-            return 0.0
-
-        # 获取当前机器人的朝向
-        orientation_q = last_odom.pose.pose.orientation
-        orientation_list = [
-            orientation_q.x,
-            orientation_q.y,
-            orientation_q.z,
-            orientation_q.w,
-        ]
-        (_, _, last_odom_yaw) = euler_from_quaternion(orientation_list)
-        current_q = current_postion.pose.pose.orientation
-        current_orientation_list = [current_q.x, current_q.y, current_q.z, current_q.w]
-        (_, _, current_yaw) = euler_from_quaternion(current_orientation_list)
-        # TODO 把相机的tf转换为odom的tf
-        fire_diff_yaw = (fire_info.center_x - 0.5) * self.ir_hfov
-        self.logger.info(
-            f"last_odom_yaw: {last_odom_yaw}, fire_diff_yaw: {fire_diff_yaw}, current_yaw: {current_yaw}"
-        )
-        delta_yaw = last_odom_yaw - fire_diff_yaw - current_yaw
-
-        return delta_yaw
-
-    def caculate_fire_distace(self):
-        """
-        计算火源距离机器人最近的距离
-        :return: 最近的火源距离
-        """
-        if not self.container:
-            return 0.0
-
-        return 0.0
-'''
 
 
 class NavigationNode(Node):
@@ -145,9 +45,17 @@ class NavigationNode(Node):
         self.navigator = BasicNavigator()
         self.goal_active = False
         self._action_goal_handle = None
-
+        
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
+        self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
+
+        self.costmap_util = CostmapUtil(
+            node=self,
+            logger=self.logger,
+            tf_buffer=self.tf_buffer,
+            tf_broadcaster=self.tf_broadcaster
+        )
 
         self.tcp_server_host = "0.0.0.0"  # Listen on all interfaces
         self.tcp_server_port = 12345  # Choose a port
@@ -370,6 +278,25 @@ class NavigationNode(Node):
             f"Extinguishment pose: ({extinguish_x:.2f}, {extinguish_y:.2f}), yaw: {math.degrees(yaw):.1f}°"
         )
         return pose
+    
+    def get_extinguishment_pose_v2(self, fire_x: float, fire_y: float):
+        """
+        使用CostmapUtil计算最优灭火位置
+        """
+        if not self.costmap_util.is_ready() :
+            self.logger.warn("Global costmap not available, falling back to simple calculation")
+            return self.get_extinguishment_pose()  # 回退到原方法
+            
+        # 使用CostmapUtil计算最优位置
+        best_pose = self.costmap_util.analyze_and_get_pose(fire_x, fire_y)
+        
+        if best_pose is None:
+            self.logger.warn("CostmapUtil failed to find valid position, falling back to simple calculation")
+            return self.get_extinguishment_pose()  # 回退到原方法
+            
+        self.logger.info(f"Found optimal extinguish pose via CostmapUtil: "
+                        f"({best_pose.pose.position.x:.3f}, {best_pose.pose.position.y:.3f})")
+        return best_pose
 
     def _feedbackCallback(self, msg):
         self.logger.info(f"Received action feedback message {msg}")
@@ -451,7 +378,9 @@ class NavigationNode(Node):
                 return result
 
         if self.fire_info.fire_position.x > 1.0:
-            pose = self.get_extinguishment_pose()
+            # pose = self.get_extinguishment_pose()
+            fire_map_pos = self.fire_info.fire_position_map
+            pose = self.get_extinguishment_pose_v2(fire_map_pos.x, fire_map_pos.y)
             if pose is None:
                 set_result(False, "Failed to get extinguishment pose.")
                 return result
@@ -580,7 +509,7 @@ class NavigationNode(Node):
                     return self.FireDetectState.FireDetectionError
             self.logger.info("Waiting for navigation to complete...")
 
-    def nav2extinguishment_pose(self):
+    def nav2extinguishment_pose(self,fire_x: float, fire_y: float):
         """
         逐步移动到灭火位置，不停检查和火源的距离，知道0.5m
         TODO 地形可能很复杂，需要结合多种方法导航
@@ -588,16 +517,7 @@ class NavigationNode(Node):
         通过nav2导航到火源前方，但是可能无法到达
         需要判断着火位置前方有没有障碍物，可以尝试通过pgm或local costmap地图判断
         """
-        pose = PoseStamped()
-        pose.header.stamp = self.get_clock().now().to_msg()
-        pose.header.frame_id = "map"
-        pose.pose.position.x = 0.0
-        pose.pose.position.y = 0.0
-        pose.pose.position.z = 0.0
-        pose.pose.orientation.x = 0.0
-        pose.pose.orientation.y = 0.0
-        pose.pose.orientation.z = 0.0
-        pose.pose.orientation.w = 1.0
+        pose = self.costmap_util.analyze_and_get_pose(float(fire_x), float(fire_y))
         fire_detect_result = self.nav2pose_with_fire_detection(pose, True)
 
         if fire_detect_result == self.FireDetectState.FireDetectionError:
@@ -613,7 +533,8 @@ class NavigationNode(Node):
         
         while abs(self.fire_info.fire_position.x) > 1.0:
             time.sleep(0.5)
-            pose = self.get_extinguishment_pose()
+            fire_map_pos = self.fire_info.fire_position_map
+            pose = self.get_extinguishment_pose_v2(fire_map_pos.x, fire_map_pos.y)
             if pose is None:
                 self.logger.error("Failed to get extinguishment pose.")
                 return
@@ -758,6 +679,18 @@ class NavigationNode(Node):
 
     def spin_async_cmd(self, radian: str):
         self.spin_async(float(radian))
+        
+    def costmap_util_cmd(self, target_x: str, target_y: str) -> str:
+        """通过socket命令测试CostmapUtil功能"""
+        try:
+            x, y = float(target_x), float(target_y)
+            best_pose = self.costmap_util.analyze_and_get_pose(x, y)
+            if best_pose:
+                return f"SUCCESS: Best pose at ({best_pose.pose.position.x:.3f}, {best_pose.pose.position.y:.3f})"
+            else:
+                return "FAILED: No valid extinguish pose found"
+        except Exception as e:
+            return f"ERROR: {str(e)}"
 
     def _handle_socket_command(self, command: str) -> str:
         """
