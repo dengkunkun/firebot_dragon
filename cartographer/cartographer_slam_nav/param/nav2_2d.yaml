@@ -114,23 +114,23 @@ controller_server:
     # Progress checker parameters
     progress_checker:
       plugin: "nav2_controller::SimpleProgressChecker"
-      required_movement_radius: 0.5
+      required_movement_radius: 0.4
       movement_time_allowance: 10.0
 
     general_goal_checker:
       stateful: True
       plugin: "nav2_controller::SimpleGoalChecker"
-      xy_goal_tolerance: 0.25
-      yaw_goal_tolerance: 0.25
+      xy_goal_tolerance: 0.4
+      yaw_goal_tolerance: 0.4
     # DWB parameters
     FollowPath:
       plugin: "dwb_core::DWBLocalPlanner"
       debug_trajectory_details: True
-      min_vel_x: 0.0
+      min_vel_x: -0.1
       min_vel_y: 0.0
       max_vel_x: 0.51
       max_vel_y: 0.0
-      max_vel_theta: 1.0
+      max_vel_theta: 0.5
       min_speed_xy: 0.0
       max_speed_xy: 0.51
       min_speed_theta: 0.0
@@ -143,7 +143,7 @@ controller_server:
       vx_samples: 30 # 增加采样点，提升动态障碍物规避能力
       vy_samples: 5
       vtheta_samples: 30
-      sim_time: 2.0 # 仿真时间适当增加
+      sim_time: 3.0 # 仿真时间适当增加
       linear_granularity: 0.05
       angular_granularity: 0.025
       transform_tolerance: 0.2
@@ -152,7 +152,7 @@ controller_server:
       short_circuit_trajectory_evaluation: True
       stateful: True
       critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
-      BaseObstacle.scale: 0.5  # 提高障碍物惩罚权重
+      BaseObstacle.scale: 0.4  # 提高障碍物惩罚权重
       PathAlign.scale: 32.0
       PathAlign.forward_point_distance: 0.1
       GoalAlign.scale: 24.0
@@ -173,8 +173,8 @@ local_costmap:
       robot_base_frame: base_link
       use_sim_time: False
       rolling_window: true
-      width: 4                      # 增大局部地图大小
-      height: 4
+      width: 6                      # 增大局部地图大小
+      height: 6
       resolution: 0.05
       robot_radius: 0.4            # 适应你的0.4m机器人
       transform_tolerance: 0.5      # 增加变换容限

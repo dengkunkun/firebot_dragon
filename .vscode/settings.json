@@ -79,6 +79,7 @@
         "csignal": "cpp",
         "cfenv": "cpp"
     },
+    "cmake.sourceDirectory": "/home/cat/firebot_dragon/src/diff_drive_robot",
     // "remote.SSH.httpProxy": "http://192.168.31.237:8080",
     // "remote.SSH.httpsProxy": "http://192.168.31.237:8080",
 }

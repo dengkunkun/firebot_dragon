@@ -1,0 +1,221 @@
+[INFO] [1749718658.639482879] [navigation_node]: [92m[detect.py:248] Initializing NavigationNode...[0m
+[INFO] [1749718658.845653900] [navigation_node]: TCP socket server listening on 0.0.0.0:12345
+[INFO] [1749718658.877013903] [navigation_node]: [92m[detect.py:316] RotateSearch action server started.[0m
+[INFO] [1749718658.877555528] [navigation_node]: [92m[detect.py:318] Navigation node started. Waiting for Nav2 to be active...[0m
+[INFO] [1749718659.894347047] [basic_navigator]: bt_navigator/get_state service not available, waiting...
+[INFO] [1749718662.662226075] [basic_navigator]: Nav2 is ready for use!
+[INFO] [1749718662.667436117] [navigation_node]: [92m[detect.py:346] global_costmap_msg type: <class 'nav2_msgs.msg._costmap.Costmap'>[0m
+[INFO] [1749718662.668155076] [navigation_node]: [92m[detect.py:354] Global costmap updated[0m
+[INFO] [1749718662.671000284] [navigation_node]: [92m[detect.py:365] Local costmap updated[0m
+[INFO] [1749718662.671537826] [navigation_node]: [92m[detect.py:326] Nav2 is active.[0m
+[INFO] [1749718662.672196410] [navigation_node]: [92m[detect.py:2251] Navigation node and RotateSearch action server running...[0m
+[INFO] [1749718667.904645894] [navigation_node]: TCP connection accepted from ('127.0.0.1', 53922)
+[INFO] [1749718672.593571573] [navigation_node]: Received command via TCP socket: 'pose, score = self.find_best_extinguish_pose_v3(fire_map_pos.x, fire_map_pos.y)'
+[INFO] [1749718694.203681786] [navigation_node]: Received command via TCP socket: 'find_best_extinguish_pose_v3  2.26832866668  -3.43607'
+[INFO] [1749718694.207046161] [navigation_node]: [92m[detect.py:1673] Finding best extinguish pose for fire at (2.268, -3.436) using optimized v3 method[0m
+[INFO] [1749718694.364902302] [navigation_node]: [92m[detect.py:1784] Optimized pose search completed in 0.153s[0m
+[INFO] [1749718694.371564845] [navigation_node]: [92m[detect.py:1785] Search statistics: total=100, excluded=0, nav_failures=0, vision_failures=0[0m
+[INFO] [1749718694.373548470] [navigation_node]: [92m[detect.py:1789] Best pose found: (3.068, -3.436), score: 0.972[0m
+[INFO] [1749718694.378108970] [navigation_node]: [92m[detect.py:415] Published extinguish_position TF[0m
+[INFO] [1749718721.576911245] [navigation_node]: Received command via TCP socket: 'find_best_extinguish_pose_v3  2.26832866668  -3.43607'
+[INFO] [1749718721.577680078] [navigation_node]: [92m[detect.py:1673] Finding best extinguish pose for fire at (2.268, -3.436) using optimized v3 method[0m
+[INFO] [1749718721.746798054] [navigation_node]: [92m[detect.py:1784] Optimized pose search completed in 0.156s[0m
+[INFO] [1749718721.763762555] [navigation_node]: [92m[detect.py:1785] Search statistics: total=100, excluded=0, nav_failures=0, vision_failures=0[0m
+[INFO] [1749718721.773798223] [navigation_node]: [92m[detect.py:1789] Best pose found: (3.068, -3.436), score: 0.972[0m
+[INFO] [1749718721.788964599] [navigation_node]: [92m[detect.py:415] Published extinguish_position TF[0m
+[INFO] [1749718743.866285484] [navigation_node]: Received command via TCP socket: 'find_and_approach_fire_cmd  2.26832866668  -3.43607'
+[INFO] [1749718743.867076484] [navigation_node]: [92m[detect.py:1864] Starting fire search and approach for fire at (2.268, -3.436)[0m
+[INFO] [1749718743.867544610] [navigation_node]: [92m[detect.py:1867] === Fire approach attempt 1/10 ===[0m
+[INFO] [1749718743.867992318] [navigation_node]: [92m[detect.py:1501] Finding best extinguish pose for fire at (2.268, -3.436)[0m
+[INFO] [1749718743.943858617] [navigation_node]: [92m[detect.py:1567] Pose search completed in 0.070s[0m
+[INFO] [1749718743.948129784] [navigation_node]: [92m[detect.py:1570] Best pose found: (3.168, -3.436), score: 1.000[0m
+[INFO] [1749718743.962266869] [navigation_node]: [92m[detect.py:415] Published extinguish_position TF[0m
+[INFO] [1749718743.965007661] [navigation_node]: [92m[detect.py:1925] Navigating to extinguish pose: (3.168, -3.436), score: 1.000[0m
+[INFO] [1749718743.965557161] [navigation_node]: [92m[detect.py:985] Navigating to pose: x=3.16832866668, y=-3.43607, z=0.0[0m
+[INFO] [1749718743.966040161] [navigation_node]: [92m[detect.py:699] Setting angular_max_z to 0.5[0m
+[INFO] [1749718743.971128870] [navigation_node]: [92m[detect.py:706] Parameter set successfully.[0m
+[INFO] [1749718743.973850995] [navigation_node]: [92m[detect.py:1005] navigate start.[0m
+[INFO] [1749718744.075761089] [navigation_node]: [92m[detect.py:1028] Robot has not moved, backup[0m
+[INFO] [1749718744.076292797] [basic_navigator]: Canceling current task.
+[INFO] [1749718744.077407547] [basic_navigator]: Backing up 0.2 m at 0.025 m/s....
+[ERROR] [1749718744.080136673] [navigation_node]: [91m[detect.py:1931] Error during navigation with fire detection[0m
+[WARN] [1749718744.080839589] [navigation_node]: [93m[detect.py:1807] Extinguish attempt failed at (3.168, -3.436): Navigation error[0m
+[INFO] [1749718744.081357589] [navigation_node]: [92m[detect.py:1087] Excluded direction range [337.5°, 22.5°] for fire at (2.268, -3.436)[0m
+[WARN] [1749718744.081902714] [navigation_node]: [93m[detect.py:1874] Failed to navigate to fire position in attempt 1[0m
+[INFO] [1749718744.082331464] [navigation_node]: [92m[detect.py:1867] === Fire approach attempt 2/10 ===[0m
+[INFO] [1749718744.082753506] [navigation_node]: [92m[detect.py:1584] Finding best extinguish pose for fire at (2.268, -3.436) using average cost method[0m
+[INFO] [1749718744.272064442] [navigation_node]: [92m[detect.py:1644] Enhanced pose search completed in 0.189s[0m
+[INFO] [1749718744.272618025] [navigation_node]: [92m[detect.py:1647] Best pose found: (3.168, -3.436), score: 1.000[0m
+[INFO] [1749718744.273623984] [navigation_node]: [92m[detect.py:415] Published extinguish_position TF[0m
+[INFO] [1749718744.274167650] [navigation_node]: [92m[detect.py:1925] Navigating to extinguish pose: (3.168, -3.436), score: 1.000[0m
+[INFO] [1749718744.274650942] [navigation_node]: [92m[detect.py:985] Navigating to pose: x=3.16832866668, y=-3.43607, z=0.0[0m
+[INFO] [1749718744.275108859] [navigation_node]: [92m[detect.py:699] Setting angular_max_z to 0.5[0m
+[INFO] [1749718744.281638984] [navigation_node]: [92m[detect.py:706] Parameter set successfully.[0m
+[INFO] [1749718744.284298693] [navigation_node]: [92m[detect.py:1005] navigate start.[0m
+[INFO] [1749718744.386386995] [navigation_node]: [92m[detect.py:1028] Robot has not moved, backup[0m
+[INFO] [1749718744.386898870] [basic_navigator]: Canceling current task.
+[INFO] [1749718744.391084579] [basic_navigator]: Backing up 0.2 m at 0.025 m/s....
+[ERROR] [1749718744.394735371] [navigation_node]: [91m[detect.py:1931] Error during navigation with fire detection[0m
+[WARN] [1749718744.395405038] [navigation_node]: [93m[detect.py:1807] Extinguish attempt failed at (3.168, -3.436): Navigation error[0m
+[INFO] [1749718744.395914288] [navigation_node]: [92m[detect.py:1087] Excluded direction range [337.5°, 22.5°] for fire at (2.268, -3.436)[0m
+[WARN] [1749718744.396493538] [navigation_node]: [93m[detect.py:1874] Failed to navigate to fire position in attempt 2[0m
+[INFO] [1749718744.397018246] [navigation_node]: [92m[detect.py:1867] === Fire approach attempt 3/10 ===[0m
+[INFO] [1749718744.397528954] [navigation_node]: [92m[detect.py:1673] Finding best extinguish pose for fire at (2.268, -3.436) using optimized v3 method[0m
+[INFO] [1749718744.502044215] [navigation_node]: [92m[detect.py:1784] Optimized pose search completed in 0.104s[0m
+[INFO] [1749718744.502593423] [navigation_node]: [92m[detect.py:1785] Search statistics: total=100, excluded=16, nav_failures=0, vision_failures=0[0m
+[INFO] [1749718744.503081673] [navigation_node]: [92m[detect.py:1789] Best pose found: (2.961, -3.036), score: 0.972[0m
+[INFO] [1749718744.504003340] [navigation_node]: [92m[detect.py:415] Published extinguish_position TF[0m
+[INFO] [1749718744.504514924] [navigation_node]: [92m[detect.py:1925] Navigating to extinguish pose: (2.961, -3.036), score: 0.972[0m
+[INFO] [1749718744.505012215] [navigation_node]: [92m[detect.py:985] Navigating to pose: x=2.961148989707551, y=-3.03607, z=0.0[0m
+[INFO] [1749718744.505512715] [navigation_node]: [92m[detect.py:699] Setting angular_max_z to 0.5[0m
+[INFO] [1749718744.510907966] [navigation_node]: [92m[detect.py:706] Parameter set successfully.[0m
+[INFO] [1749718744.515348591] [navigation_node]: [92m[detect.py:1005] navigate start.[0m
+[INFO] [1749718744.617458768] [navigation_node]: [92m[detect.py:1028] Robot has not moved, backup[0m
+[INFO] [1749718744.617945268] [basic_navigator]: Canceling current task.
+[INFO] [1749718744.622755144] [basic_navigator]: Backing up 0.2 m at 0.025 m/s....
+[ERROR] [1749718744.626146644] [navigation_node]: [91m[detect.py:1931] Error during navigation with fire detection[0m
+[WARN] [1749718744.626820102] [navigation_node]: [93m[detect.py:1807] Extinguish attempt failed at (2.961, -3.036): Navigation error[0m
+[INFO] [1749718744.627288228] [navigation_node]: [92m[detect.py:1087] Excluded direction range [7.5°, 52.5°] for fire at (2.268, -3.436)[0m
+[WARN] [1749718744.627796894] [navigation_node]: [93m[detect.py:1874] Failed to navigate to fire position in attempt 3[0m
+[INFO] [1749718744.628232644] [navigation_node]: [92m[detect.py:1867] === Fire approach attempt 4/10 ===[0m
+[INFO] [1749718744.628663728] [navigation_node]: [92m[detect.py:1673] Finding best extinguish pose for fire at (2.268, -3.436) using optimized v3 method[0m
+[INFO] [1749718744.723186195] [navigation_node]: [92m[detect.py:1784] Optimized pose search completed in 0.094s[0m
+[INFO] [1749718744.723756987] [navigation_node]: [92m[detect.py:1785] Search statistics: total=100, excluded=24, nav_failures=0, vision_failures=0[0m
+[INFO] [1749718744.724240862] [navigation_node]: [92m[detect.py:1789] Best pose found: (2.668, -2.743), score: 0.972[0m
+[INFO] [1749718744.725162237] [navigation_node]: [92m[detect.py:415] Published extinguish_position TF[0m
+[INFO] [1749718744.725721946] [navigation_node]: [92m[detect.py:1925] Navigating to extinguish pose: (2.668, -2.743), score: 0.972[0m
+[INFO] [1749718744.726262696] [navigation_node]: [92m[detect.py:985] Navigating to pose: x=2.66832866668, y=-2.7432496769724493, z=0.0[0m
+[INFO] [1749718744.726765529] [navigation_node]: [92m[detect.py:699] Setting angular_max_z to 0.5[0m
+[INFO] [1749718744.732749071] [navigation_node]: [92m[detect.py:706] Parameter set successfully.[0m
+[INFO] [1749718744.757903574] [navigation_node]: [92m[detect.py:1005] navigate start.[0m
+[INFO] [1749718744.859965043] [navigation_node]: [92m[detect.py:1028] Robot has not moved, backup[0m
+[INFO] [1749718744.860467584] [basic_navigator]: Canceling current task.
+[INFO] [1749718744.863362376] [basic_navigator]: Backing up 0.2 m at 0.025 m/s....
+[ERROR] [1749718744.868106627] [navigation_node]: [91m[detect.py:1931] Error during navigation with fire detection[0m
+[WARN] [1749718744.868780085] [navigation_node]: [93m[detect.py:1807] Extinguish attempt failed at (2.668, -2.743): Navigation error[0m
+[INFO] [1749718744.869317043] [navigation_node]: [92m[detect.py:1087] Excluded direction range [37.5°, 82.5°] for fire at (2.268, -3.436)[0m
+[WARN] [1749718744.869895710] [navigation_node]: [93m[detect.py:1874] Failed to navigate to fire position in attempt 4[0m
+[INFO] [1749718744.870335544] [navigation_node]: [92m[detect.py:1867] === Fire approach attempt 5/10 ===[0m
+[INFO] [1749718744.870797835] [navigation_node]: [92m[detect.py:1673] Finding best extinguish pose for fire at (2.268, -3.436) using optimized v3 method[0m
+[INFO] [1749718744.956529177] [navigation_node]: [92m[detect.py:1784] Optimized pose search completed in 0.085s[0m
+[INFO] [1749718744.957050969] [navigation_node]: [92m[detect.py:1785] Search statistics: total=100, excluded=32, nav_failures=0, vision_failures=0[0m
+[INFO] [1749718744.957523761] [navigation_node]: [92m[detect.py:1789] Best pose found: (2.268, -2.636), score: 0.972[0m
+[INFO] [1749718744.958367844] [navigation_node]: [92m[detect.py:415] Published extinguish_position TF[0m
+[INFO] [1749718744.958835677] [navigation_node]: [92m[detect.py:1925] Navigating to extinguish pose: (2.268, -2.636), score: 0.972[0m
+[INFO] [1749718744.959311969] [navigation_node]: [92m[detect.py:985] Navigating to pose: x=2.2683286666800004, y=-2.63607, z=0.0[0m
+[INFO] [1749718744.959766386] [navigation_node]: [92m[detect.py:699] Setting angular_max_z to 0.5[0m
+[INFO] [1749718744.965380970] [navigation_node]: [92m[detect.py:706] Parameter set successfully.[0m
+[INFO] [1749718744.968469720] [navigation_node]: [92m[detect.py:1005] navigate start.[0m
+[INFO] [1749718745.070757522] [navigation_node]: [92m[detect.py:1028] Robot has not moved, backup[0m
+[INFO] [1749718745.071220689] [basic_navigator]: Canceling current task.
+[INFO] [1749718745.075769814] [basic_navigator]: Backing up 0.2 m at 0.025 m/s....
+[ERROR] [1749718745.078295939] [navigation_node]: [91m[detect.py:1931] Error during navigation with fire detection[0m
+[WARN] [1749718745.078955398] [navigation_node]: [93m[detect.py:1807] Extinguish attempt failed at (2.268, -2.636): Navigation error[0m
+[INFO] [1749718745.079451231] [navigation_node]: [92m[detect.py:1087] Excluded direction range [67.5°, 112.5°] for fire at (2.268, -3.436)[0m
+[WARN] [1749718745.080032815] [navigation_node]: [93m[detect.py:1874] Failed to navigate to fire position in attempt 5[0m
+[INFO] [1749718745.080514065] [navigation_node]: [92m[detect.py:1867] === Fire approach attempt 6/10 ===[0m
+[INFO] [1749718745.080994440] [navigation_node]: [92m[detect.py:1673] Finding best extinguish pose for fire at (2.268, -3.436) using optimized v3 method[0m
+[INFO] [1749718745.156967197] [navigation_node]: [92m[detect.py:1784] Optimized pose search completed in 0.075s[0m
+[INFO] [1749718745.157517572] [navigation_node]: [92m[detect.py:1785] Search statistics: total=100, excluded=40, nav_failures=0, vision_failures=0[0m
+[INFO] [1749718745.158012239] [navigation_node]: [92m[detect.py:1789] Best pose found: (1.868, -2.743), score: 0.972[0m
+[INFO] [1749718745.158882573] [navigation_node]: [92m[detect.py:415] Published extinguish_position TF[0m
+[INFO] [1749718745.159404364] [navigation_node]: [92m[detect.py:1925] Navigating to extinguish pose: (1.868, -2.743), score: 0.972[0m
+[INFO] [1749718745.159874531] [navigation_node]: [92m[detect.py:985] Navigating to pose: x=1.86832866668, y=-2.743249676972449, z=0.0[0m
+[INFO] [1749718745.160310573] [navigation_node]: [92m[detect.py:699] Setting angular_max_z to 0.5[0m
+[INFO] [1749718745.165249073] [navigation_node]: [92m[detect.py:706] Parameter set successfully.[0m
+[INFO] [1749718745.167999199] [navigation_node]: [92m[detect.py:1005] navigate start.[0m
+[INFO] [1749718745.270080209] [navigation_node]: [92m[detect.py:1028] Robot has not moved, backup[0m
+[INFO] [1749718745.270546875] [basic_navigator]: Canceling current task.
+[INFO] [1749718745.273528292] [basic_navigator]: Backing up 0.2 m at 0.025 m/s....
+[ERROR] [1749718745.275942709] [navigation_node]: [91m[detect.py:1931] Error during navigation with fire detection[0m
+[WARN] [1749718745.276559001] [navigation_node]: [93m[detect.py:1807] Extinguish attempt failed at (1.868, -2.743): Navigation error[0m
+[INFO] [1749718745.277021876] [navigation_node]: [92m[detect.py:1087] Excluded direction range [97.5°, 142.5°] for fire at (2.268, -3.436)[0m
+[WARN] [1749718745.277516251] [navigation_node]: [93m[detect.py:1874] Failed to navigate to fire position in attempt 6[0m
+[INFO] [1749718745.277929543] [navigation_node]: [92m[detect.py:1867] === Fire approach attempt 7/10 ===[0m
+[INFO] [1749718745.278348668] [navigation_node]: [92m[detect.py:1673] Finding best extinguish pose for fire at (2.268, -3.436) using optimized v3 method[0m
+[INFO] [1749718745.344261258] [navigation_node]: [92m[detect.py:1784] Optimized pose search completed in 0.065s[0m
+[INFO] [1749718745.344787133] [navigation_node]: [92m[detect.py:1785] Search statistics: total=100, excluded=48, nav_failures=0, vision_failures=0[0m
+[INFO] [1749718745.345245633] [navigation_node]: [92m[detect.py:1789] Best pose found: (1.576, -3.036), score: 0.972[0m
+[INFO] [1749718745.346105175] [navigation_node]: [92m[detect.py:415] Published extinguish_position TF[0m
+[INFO] [1749718745.346678300] [navigation_node]: [92m[detect.py:1925] Navigating to extinguish pose: (1.576, -3.036), score: 0.972[0m
+[INFO] [1749718745.347158967] [navigation_node]: [92m[detect.py:985] Navigating to pose: x=1.5755083436524489, y=-3.03607, z=0.0[0m
+[INFO] [1749718745.347594425] [navigation_node]: [92m[detect.py:699] Setting angular_max_z to 0.5[0m
+[INFO] [1749718745.354662676] [navigation_node]: [92m[detect.py:706] Parameter set successfully.[0m
+[INFO] [1749718745.357789051] [navigation_node]: [92m[detect.py:1005] navigate start.[0m
+[INFO] [1749718745.459816394] [navigation_node]: [92m[detect.py:1028] Robot has not moved, backup[0m
+[INFO] [1749718745.460321853] [basic_navigator]: Canceling current task.
+[INFO] [1749718745.464657187] [basic_navigator]: Backing up 0.2 m at 0.025 m/s....
+[ERROR] [1749718745.466955520] [navigation_node]: [91m[detect.py:1931] Error during navigation with fire detection[0m
+[WARN] [1749718745.467607395] [navigation_node]: [93m[detect.py:1807] Extinguish attempt failed at (1.576, -3.036): Navigation error[0m
+[INFO] [1749718745.468097979] [navigation_node]: [92m[detect.py:1087] Excluded direction range [127.5°, 172.5°] for fire at (2.268, -3.436)[0m
+[WARN] [1749718745.468611895] [navigation_node]: [93m[detect.py:1874] Failed to navigate to fire position in attempt 7[0m
+[INFO] [1749718745.469060187] [navigation_node]: [92m[detect.py:1867] === Fire approach attempt 8/10 ===[0m
+[INFO] [1749718745.469523354] [navigation_node]: [92m[detect.py:1673] Finding best extinguish pose for fire at (2.268, -3.436) using optimized v3 method[0m
+[INFO] [1749718745.525850609] [navigation_node]: [92m[detect.py:1784] Optimized pose search completed in 0.056s[0m
+[INFO] [1749718745.526457860] [navigation_node]: [92m[detect.py:1785] Search statistics: total=100, excluded=56, nav_failures=0, vision_failures=0[0m
+[INFO] [1749718745.526980235] [navigation_node]: [92m[detect.py:1789] Best pose found: (1.468, -3.436), score: 0.972[0m
+[INFO] [1749718745.527962860] [navigation_node]: [92m[detect.py:415] Published extinguish_position TF[0m
+[INFO] [1749718745.528516151] [navigation_node]: [92m[detect.py:1925] Navigating to extinguish pose: (1.468, -3.436), score: 0.972[0m
+[INFO] [1749718745.529011693] [navigation_node]: [92m[detect.py:985] Navigating to pose: x=1.46832866668, y=-3.4360700000000004, z=0.0[0m
+[INFO] [1749718745.529501693] [navigation_node]: [92m[detect.py:699] Setting angular_max_z to 0.5[0m
+[INFO] [1749718745.538084861] [navigation_node]: [92m[detect.py:706] Parameter set successfully.[0m
+[INFO] [1749718745.542790903] [navigation_node]: [92m[detect.py:1005] navigate start.[0m
+[INFO] [1749718745.645026205] [navigation_node]: [92m[detect.py:1028] Robot has not moved, backup[0m
+[INFO] [1749718745.645494038] [basic_navigator]: Canceling current task.
+[INFO] [1749718745.649651164] [basic_navigator]: Backing up 0.2 m at 0.025 m/s....
+[ERROR] [1749718745.652205289] [navigation_node]: [91m[detect.py:1931] Error during navigation with fire detection[0m
+[WARN] [1749718745.652842581] [navigation_node]: [93m[detect.py:1807] Extinguish attempt failed at (1.468, -3.436): Navigation error[0m
+[INFO] [1749718745.653372247] [navigation_node]: [92m[detect.py:1087] Excluded direction range [157.5°, 202.5°] for fire at (2.268, -3.436)[0m
+[WARN] [1749718745.654122997] [navigation_node]: [93m[detect.py:1874] Failed to navigate to fire position in attempt 8[0m
+[INFO] [1749718745.654587331] [navigation_node]: [92m[detect.py:1867] === Fire approach attempt 9/10 ===[0m
+[INFO] [1749718745.655094247] [navigation_node]: [92m[detect.py:1673] Finding best extinguish pose for fire at (2.268, -3.436) using optimized v3 method[0m
+[INFO] [1749718745.701116627] [navigation_node]: [92m[detect.py:1784] Optimized pose search completed in 0.045s[0m
+[INFO] [1749718745.701648627] [navigation_node]: [92m[detect.py:1785] Search statistics: total=100, excluded=64, nav_failures=0, vision_failures=0[0m
+[INFO] [1749718745.702129294] [navigation_node]: [92m[detect.py:1789] Best pose found: (1.576, -3.836), score: 0.972[0m
+[INFO] [1749718745.703134086] [navigation_node]: [92m[detect.py:415] Published extinguish_position TF[0m
+[INFO] [1749718745.703676586] [navigation_node]: [92m[detect.py:1925] Navigating to extinguish pose: (1.576, -3.836), score: 0.972[0m
+[INFO] [1749718745.704179419] [navigation_node]: [92m[detect.py:985] Navigating to pose: x=1.5755083436524493, y=-3.8360700000000003, z=0.0[0m
+[INFO] [1749718745.704634127] [navigation_node]: [92m[detect.py:699] Setting angular_max_z to 0.5[0m
+[INFO] [1749718745.710196795] [navigation_node]: [92m[detect.py:706] Parameter set successfully.[0m
+[INFO] [1749718745.712953045] [navigation_node]: [92m[detect.py:1005] navigate start.[0m
+[INFO] [1749718745.814854680] [navigation_node]: [92m[detect.py:1028] Robot has not moved, backup[0m
+[INFO] [1749718745.815356930] [basic_navigator]: Canceling current task.
+[INFO] [1749718745.819747681] [basic_navigator]: Backing up 0.2 m at 0.025 m/s....
+[ERROR] [1749718745.822663181] [navigation_node]: [91m[detect.py:1931] Error during navigation with fire detection[0m
+[WARN] [1749718745.823322348] [navigation_node]: [93m[detect.py:1807] Extinguish attempt failed at (1.576, -3.836): Navigation error[0m
+[INFO] [1749718745.823814389] [navigation_node]: [92m[detect.py:1087] Excluded direction range [187.5°, 232.5°] for fire at (2.268, -3.436)[0m
+[WARN] [1749718745.824342306] [navigation_node]: [93m[detect.py:1874] Failed to navigate to fire position in attempt 9[0m
+[INFO] [1749718745.824795848] [navigation_node]: [92m[detect.py:1867] === Fire approach attempt 10/10 ===[0m
+[INFO] [1749718745.825219348] [navigation_node]: [92m[detect.py:1673] Finding best extinguish pose for fire at (2.268, -3.436) using optimized v3 method[0m
+[INFO] [1749718745.860873851] [navigation_node]: [92m[detect.py:1784] Optimized pose search completed in 0.035s[0m
+[INFO] [1749718745.861395935] [navigation_node]: [92m[detect.py:1785] Search statistics: total=100, excluded=72, nav_failures=0, vision_failures=0[0m
+[INFO] [1749718745.861865518] [navigation_node]: [92m[detect.py:1789] Best pose found: (1.868, -4.129), score: 0.972[0m
+[INFO] [1749718745.862737310] [navigation_node]: [92m[detect.py:415] Published extinguish_position TF[0m
+[INFO] [1749718745.863257060] [navigation_node]: [92m[detect.py:1925] Navigating to extinguish pose: (1.868, -4.129), score: 0.972[0m
+[INFO] [1749718745.863700685] [navigation_node]: [92m[detect.py:985] Navigating to pose: x=1.8683286666800003, y=-4.1288903230275515, z=0.0[0m
+[INFO] [1749718745.864156268] [navigation_node]: [92m[detect.py:699] Setting angular_max_z to 0.5[0m
+[INFO] [1749718745.867868310] [navigation_node]: [92m[detect.py:706] Parameter set successfully.[0m
+[INFO] [1749718745.870733352] [navigation_node]: [92m[detect.py:1005] navigate start.[0m
+[INFO] [1749718745.972531738] [navigation_node]: [92m[detect.py:1028] Robot has not moved, backup[0m
+[INFO] [1749718745.973047404] [basic_navigator]: Canceling current task.
+[INFO] [1749718745.977400238] [basic_navigator]: Backing up 0.2 m at 0.025 m/s....
+[ERROR] [1749718745.979716947] [navigation_node]: [91m[detect.py:1931] Error during navigation with fire detection[0m
+[WARN] [1749718745.980367072] [navigation_node]: [93m[detect.py:1807] Extinguish attempt failed at (1.868, -4.129): Navigation error[0m
+[INFO] [1749718745.980857072] [navigation_node]: [92m[detect.py:1087] Excluded direction range [217.5°, 262.5°] for fire at (2.268, -3.436)[0m
+[WARN] [1749718745.981361947] [navigation_node]: [93m[detect.py:1874] Failed to navigate to fire position in attempt 10[0m
+[ERROR] [1749718745.981786322] [navigation_node]: [91m[detect.py:1889] Failed to find and approach fire after 10 attempts[0m
+Keyboard interrupt, shutting down.
+Traceback (most recent call last):
+  File "/home/cat/firebot_dragon/install/fire_bussiness/lib/fire_bussiness/detect", line 33, in <module>
+    sys.exit(load_entry_point('fire-bussiness', 'console_scripts', 'detect')())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cat/firebot_dragon/build/fire_bussiness/fire_bussiness/detect.py", line 2286, in main
+    rclpy.shutdown()
+  File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/__init__.py", line 134, in shutdown
+    _shutdown(context=context)
+  File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/utilities.py", line 82, in shutdown
+    context.shutdown()
+  File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/context.py", line 129, in shutdown
+    self.__context.shutdown()
+rclpy._rclpy_pybind11.RCLError: failed to shutdown: rcl_shutdown already called on the given context, at ./src/rcl/init.c:333
+[ros2run]: Process exited with failure 1

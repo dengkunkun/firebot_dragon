@@ -47,17 +47,17 @@
       <xacro:astra_pro_plus/>
       <xacro:hk_ir_camera
         prefix="left_"
-        xyz_offset="0.27 0.164 0.423"
+        xyz_offset="0.27 0.12 0.423"
       />
       <xacro:hk_ir_camera
         prefix="right_"
-        xyz_offset="0.27 -0.13 0.423"
+        xyz_offset="0.27 -0.08 0.423"
       />
 
     <joint name="stereo_ir_camera_joint" type="fixed">
       <parent link="base_link"/>  <!-- 或者其他合适的父link -->
       <child link="stereo_ir_camera"/> <!-- 虚拟的 -->
-      <origin xyz="0.27 0.017 0.423" rpy="0 0 0"/>  <!-- 根据实际安装位置调整 -->
+      <origin xyz="0.27 0.02 0.423" rpy="0 0 0"/>  <!-- 根据实际安装位置调整 -->
     </joint>
 
     <link name="stereo_ir_camera">

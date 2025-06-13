@@ -42,3 +42,12 @@
 
     jpeg_quality: 80        # JPEG质量 (1-100, 数值越高质量越好但文件越大)
     png_compression: 3      # PNG压缩级别 (0-9, 数值越高压缩越强但速度越慢)
+
+    # 同步相关参数
+    max_sync_time_diff_ms: 200        # 从50ms放宽到100ms
+    enable_loose_sync: true           # 启用宽松同步模式
+    camera_read_timeout_ms: 800       # 增加超时时间到800ms
+
+    # 温差容忍度
+    max_temp_diff_strict: 2.0         # 严格模式温差
+    max_temp_diff_loose: 5.0          # 宽松模式温差

@@ -210,6 +210,9 @@ class Controller(Node):
         self.declare_parameter('wheel_diameter', 0.0)
         
         self.declare_parameter('open_loop', False)
+        self.declare_parameter('stop', False)
+        
+        
         
         self.pub_odom_topic = self.get_parameter('pub_odom_topic').value
         self.base_frame_id = self.get_parameter('base_frame_id').value
@@ -230,10 +233,15 @@ class Controller(Node):
             node_name="motion_jetson",
             callback=self.angular_max_z_change_callback,
         )
+        self.stop_callback_handle = self.handler.add_parameter_callback(
+            parameter_name="stop",
+            node_name="motion_jetson",
+            callback=self.stop_change_callback,
+        )
         
         self.open_loop = self.get_parameter('open_loop').value
         self.get_logger().info(f'\033[1;32m{self.open_loop}\033[0m')
-
+        self.stop = self.get_parameter('stop').value
         self.wheelbase = self.get_parameter('wheelbase').value
         self.track_width = self.get_parameter('track_width').value
         self.wheel_diameter = self.get_parameter('wheel_diameter').value
@@ -275,6 +283,16 @@ class Controller(Node):
         self.angular_max_z=self.get_parameter('angular_max_z').value
         self.get_logger().warn(f"Updated angular_max_z: {self.angular_max_z}")
     
+    def stop_change_callback(self, p: rclpy.parameter.Parameter) -> None:
+        self.get_logger().warn(f"Received an update to parameter: {p.name}: {rclpy.parameter.parameter_value_to_python(p.value)}")
+        # self.get_logger().warn(f'p:{p}') # p:rcl_interfaces.msg.Parameter
+        self.stop=self.get_parameter('stop').value
+        if self.stop:
+            self.get_logger().info('\033[1;32m%s\033[0m' % 'stop')
+            speed=self.mecanum.set_velocity(0.0, 0.0, 0.0)
+            self.motor_pub.publish(speed)
+        else:
+            self.get_logger().info('\033[1;32m%s\033[0m' % 'start')
     def get_node_state(self, request, response):
         response.success = True
         return response
@@ -307,6 +325,12 @@ class Controller(Node):
         self.pose_pub.publish(pose)
 
     def cmd_vel_callback(self, msg):
+        if self.stop:
+            msg.linear.x = 0.0
+            msg.linear.y = 0.0
+            msg.angular.z = 0.0
+            self.get_logger().info('\033[1;32m%s\033[0m' % 'stop')
+            return
         if msg.linear.x > self.linear_max_x:
             msg.linear.x = self.linear_max_x
         if msg.linear.x < -self.linear_max_x:

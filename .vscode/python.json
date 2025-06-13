@@ -1,0 +1,22 @@
+{
+    "Python Function with Full Documentation": {
+        "prefix": "pyfunc",
+        "body": [
+            "def ${1:function_name}(${2:self}, ${3:args}) -> ${4:return_type}:",
+            "    \"\"\"",
+            "    功能说明：${5:功能描述}",
+            "    ",
+            "    参数说明：",
+            "        ${6:参数描述}",
+            "        ",
+            "    返回值说明：",
+            "        ${7:返回值描述}",
+            "        ",
+            "    实现说明：",
+            "        ${8:实现步骤}",
+            "    \"\"\"",
+            "    ${0:# 实现代码}"
+        ],
+        "description": "带完整文档的Python函数模板"
+    }
+}
